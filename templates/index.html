@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTrack ERP - Waste Management & Payroll Platform</title>
+    <style>
+        /* --- Global Reset & Variables --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        :root {
+            --bg-body: #f9f8f3;          
+            --bg-panel: #ffffff;         
+            --bg-sidebar: #382435;       
+            --sidebar-active: #714B67;    
+            --sidebar-hover: #4e334a;     
+            --primary-purple: #714B67;   
+            --primary-purple-hover: #5d3d55;
+            --purple-title: #52314d;     
+            --text-main: #2d2b30;
+            --text-muted: #6e6b73;
+            --border-color: #e6e0d5;     
+            --table-th-bg: #f3efe6;      
+            --input-bg: #ffffff;
+            --input-border: #d2cbbd;
+            --text-label: #4a4650;
+        }
+
+        body.dark-theme {
+            --bg-body: #161218;
+            --bg-panel: #221c26;
+            --bg-sidebar: #130f15;
+            --sidebar-active: #8b5b80;
+            --sidebar-hover: #2d2232;
+            --primary-purple: #9d6b91;
+            --primary-purple-hover: #b27ba4;
+            --purple-title: #e4cbe1;
+            --text-main: #f0ecf4;
+            --text-muted: #a49cb0;
+            --border-color: #382e40;
+            --table-th-bg: #1c1622;
+            --input-bg: #221c26;
+            --input-border: #4a3e54;
+            --text-label: #ccaecf;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* --- Login Screen Layout --- */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #382435 0%, #1e131d 100%);
+        }
+
+        .login-card {
+            background: var(--bg-panel);
+            color: var(--text-main);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid var(--border-color);
+        }
+
+        .login-card h2 { margin-bottom: 0.5rem; color: var(--purple-title); text-align: center; font-weight: 700; }
+        .login-card p { color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 1.5rem; }
+
+        .login-toggle-tabs { display: flex; background: var(--bg-body); padding: 0.3rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--border-color); }
+        .login-toggle-btn { flex: 1; background: none; border: none; padding: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+        .login-toggle-btn.active { background: var(--primary-purple); color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .login-form-view { display: none; }
+        .login-form-view.active { display: block; }
+
+        /* --- Left Sidebar Dashboard Layout --- */
+        #dashboard-wrapper { display: none; height: 100vh; position: relative; }
+        .dashboard-container { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed { width: 0; overflow: hidden; border: none; padding: 0; margin: 0; }
+
+        .sidebar-brand { padding: 1.5rem 1.2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.15); }
+        .sidebar-brand h1 { font-size: 1.3rem; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
+
+        .nav-tabs { display: flex; flex-direction: column; padding: 1rem 0.8rem; gap: 0.4rem; flex-grow: 1; overflow-y: auto; }
+        .tab-btn { background: none; border: none; color: #d1c7d0; padding: 0.75rem 1rem; font-size: 0.92rem; font-weight: 500; text-align: left; cursor: pointer; border-radius: 8px; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.6rem; }
+        .tab-btn:hover { background-color: var(--sidebar-hover); color: #ffffff; }
+        .tab-btn.active { background-color: var(--sidebar-active); color: #ffffff; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+        .sidebar-footer { padding: 1.2rem 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 0.8rem; }
+        .user-profile { font-size: 0.85rem; background: rgba(255, 255, 255, 0.1); padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); color: #f1eaf0; word-break: break-word; }
+        .sidebar-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .sidebar-controls .btn { flex: 1; font-size: 0.75rem; padding: 0.4rem 0.2rem; text-align: center; }
+
+        /* --- Main Content Area --- */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 2rem 2.5rem; background-color: var(--bg-body); position: relative; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Floating Menu Toggle Button */
+        .floating-menu-btn { position: absolute; top: 1.5rem; right: 2.5rem; z-index: 100; font-size: 0.85rem; padding: 0.4rem 0.8rem; }
+
+        h2 { margin-bottom: 1.5rem; color: var(--purple-title); font-size: 1.6rem; font-weight: 700; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+
+        .management-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        @media (min-width: 1100px) { .management-grid { grid-template-columns: 1fr 2fr; } }
+        
+        .clients-grid-container { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+
+        .panel { background: var(--bg-panel); padding: 1.6rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .panel-header-with-action { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.2rem; }
+        .panel-header-with-action h3 { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .panel h3 { margin-bottom: 1.2rem; color: var(--purple-title); border-bottom: 1px dashed var(--border-color); padding-bottom: 0.5rem; font-size: 1.15rem; font-weight: 600; }
+
+        .form-group { margin-bottom: 1.2rem; position: relative; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.88rem; color: var(--text-label); }
+        .form-control { width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-main); border-radius: 6px; font-size: 0.95rem; outline: none; transition: all 0.2s; }
+        .form-control:focus { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15); }
+        
+        .checkbox-group { display: flex; gap: 1rem; flex-wrap: wrap; background: var(--table-th-bg); padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border-color); }
+        .checkbox-group label { display: flex; align-items: center; gap: 0.4rem; font-weight: 500; cursor: pointer; color: var(--text-main); }
+        .error-text { color: #ef4444; font-size: 0.8rem; margin-top: 0.3rem; display: none; font-weight: 500; }
+
+        /* --- Buttons --- */
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary-purple); color: white; width: 100%; }
+        .btn-primary:hover { background-color: var(--primary-purple-hover); }
+        .btn-danger { background-color: #dc2626; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-secondary { background-color: #64748b; color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-success { background-color: #16a34a; color: white; padding: 0.5rem 1rem; font-size: 0.9rem; }
+        .btn-success:hover { background-color: #15803d; }
+
+        /* --- Tables --- */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        th { background-color: var(--table-th-bg); color: var(--purple-title); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 0.2rem; background-color: #e2dcd0; color: #334155; }
+        .badge.admin { background-color: #fce7f3; color: #9d174d; }
+        .badge.write { background-color: #dcfce7; color: #15803d; }
+        .badge.read { background-color: #e0f2fe; color: #0369a1; }
+        .badge.delete { background-color: #fef3c7; color: #d97706; }
+        .badge.public-sector { background-color: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .badge.private-sector { background-color: #fdf4ff; color: #714B67; border: 1px solid #f5d0fe; }
+
+        .clickable-row { cursor: pointer; transition: background-color 0.15s ease; }
+        .clickable-row:hover { background-color: var(--table-th-bg); }
+
+        /* --- Calculation Output Ledger --- */
+        .calc-preview-container { background-color: var(--table-th-bg); border: 1px dashed var(--input-border); border-radius: 6px; padding: 1rem; margin-top: 1rem; font-size: 0.85rem; }
+        .calc-preview-row { display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--text-main); }
+        .calc-preview-total { border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem; font-weight: bold; font-size: 1rem; color: var(--primary-purple); }
+
+        /* --- Interactive Modal Modifiers --- */
+        .modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(28, 18, 27, 0.7); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-wrapper { background: var(--bg-panel); color: var(--text-main); width: 95%; max-width: 1100px; border-radius: 12px; padding: 2rem; border: 1px solid var(--border-color); box-shadow: 0 20px 30px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; }
+        .modal-header-block { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; }
+        .modal-layout-split { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media(min-width: 992px) { .modal-layout-split { grid-template-columns: 1fr 1fr; } }
+
+        /* Document Paper Preview */
+        .document-paper-preview { background: #ffffff; color: #000000; border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 2.5rem; border-radius: 6px; min-height: 520px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; }
+        .document-paper-preview * { color: #000000 !important; }
+        .doc-header-text { font-size: 0.85rem; color: #000000; margin-bottom: 1.5rem; line-height: 1.4; }
+        .doc-meta-right { text-align: right; font-size: 0.95rem; margin-bottom: 1.5rem; font-weight: 500; color: #000000; }
+        .doc-title-centered { text-align: center; font-size: 1.4rem; font-weight: bold; margin: 1.5rem 0; text-transform: uppercase; border-bottom: 2px solid #000000; padding-bottom: 0.4rem; color: #000000; }
+        .doc-body-paragraph { font-size: 0.95rem; text-align: justify; margin-bottom: 1.2rem; line-height: 1.7; color: #000000; }
+        .doc-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        .doc-table th, .doc-table td { border: 1px solid #000000; padding: 0.6rem 0.8rem; color: #000000; }
+        .doc-table th { background-color: #f1f5f9; font-weight: 600; color: #000000; }
+        .doc-footer-signature { text-align: right; margin-top: 2rem; font-weight: bold; font-size: 0.95rem; color: #000000; }
+
+        /* Calendar Styling */
+        .calendar-control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .calendar-matrix-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--table-th-bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-color); }
+        .calendar-weekday-lbl { text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--purple-title); padding-bottom: 0.25rem; }
+        .calendar-day-node { aspect-ratio: 1; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.1s ease; }
+        .calendar-day-node:hover { transform: scale(1.08); z-index: 2; }
+        .calendar-day-node.empty-slot { background: transparent; border: none; cursor: default; }
+        .calendar-day-node.read-only-node { cursor: default; }
+        .calendar-day-node.read-only-node:hover { transform: none; }
+        .state-present { background-color: #22c55e !important; color: white !important; }
+        .state-holiday { background-color: #eab308 !important; color: white !important; }
+        .state-unjustified { background-color: #ef4444 !important; color: white !important; }
+
+        .status-radio-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .status-radio-selector label { flex: 1; padding: 0.4rem; border-radius: 6px; text-align: center; font-weight: 600; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--border-color); }
+        .ledger-scrollbox { max-height: 140px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 0.5rem; }
+
+        /* Metric Dashboard Cards */
+        .metrics-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+        .metric-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border-top: 4px solid var(--primary-purple); }
+        .metric-card h4 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem; letter-spacing: 0.5px; }
+        .metric-card p { font-size: 1.8rem; font-weight: 700; }
+    </style>
+    <script>
+        (function() {
+            const currentSessionThemeSetting = localStorage.getItem('company_theme_config') || 'light';
+            if (currentSessionThemeSetting === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.addEventListener("DOMContentLoaded", function() { document.body.classList.add('dark-theme'); });
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>EcoTrack Portal</h2>
+            <p id="txt-login-subtitle">Select entry method to sync local terminal logs.</p>
+            
+            <div class="login-toggle-tabs">
+                <button type="button" id="tab-btn-staff" class="login-toggle-btn active" onclick="setLoginMode('staff')">Staff Directory</button>
+                <button type="button" id="tab-btn-hr" class="login-toggle-btn" onclick="setLoginMode('hr')">HR Master Entry</button>
+            </div>
+
+            <div id="view-staff" class="login-form-view active">
+                <form id="staff-login-form">
+                    <div class="form-group">
+                        <label for="login-name" id="lbl-login-name">Full Name</label>
+                        <input type="text" id="login-name" class="form-control" placeholder="e.g., Karim Fakhfakh" autocomplete="off" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-role" id="lbl-login-role">Assigned Role</label>
+                        <input type="text" id="login-role" class="form-control" placeholder="e.g., Stagiere" required>
+                        <div id="staff-auth-error" class="error-text">No matching identity profile found in local database.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-auth-identity">Authenticate Identity</button>
+                </form>
+            </div>
+
+            <div id="view-hr" class="login-form-view">
+                <form id="hr-login-form">
+                    <div class="form-group">
+                        <label for="hr-code" id="lbl-hr-code">Master Access Protocol Code</label>
+                        <input type="password" id="hr-code" class="form-control" placeholder="••••••••" autocomplete="off" required>
+                        <div id="hr-auth-error" class="error-text">Handshake rejected. Master code invalid.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-init-hr">Initialize HR Master Session</button>
+                </form>
+                <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+                    *Master Configuration Core Key: <strong>19100576</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Left-Sidebar Layout Dashboard -->
+    <div id="dashboard-wrapper">
+        <div class="dashboard-container">
+            
+            <!-- Left Sidebar -->
+            <aside class="sidebar" id="main-sidebar">
+                <div class="sidebar-brand">
+                    <h1>EcoTrack</h1>
+                </div>
+
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" onclick="switchTab('dashboard-tab')" data-i18n="nav_overview">Overview</button>
+                    <button id="nav-profile-tab" class="tab-btn" onclick="switchTab('profile-tab')" data-i18n="nav_profile">My Profile</button>
+                    <button id="nav-emp-tab" class="tab-btn" onclick="switchTab('employee-tab')" data-i18n="nav_employees">Employees</button>
+                    <button id="nav-client-tab" class="tab-btn" onclick="switchTab('clients-tab')" data-i18n="nav_clients">Clients</button>
+                    <button id="nav-pricing-tab" class="tab-btn" onclick="switchTab('pricing-tab')" data-i18n="nav_waste">Waste Categories</button>
+                    <button id="nav-bordereau-tab" class="tab-btn" onclick="switchTab('bordereau-tab')" data-i18n="nav_bordereau">Bordereau</button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div id="current-user-display" class="user-profile">Connected: User (Role)</div>
+                    <div class="sidebar-controls">
+                        <button type="button" onclick="executeSystemThemeToggle()" class="btn btn-secondary">
+                            <span id="theme-icon-indicator">🌓</span> <span data-i18n="btn_theme">Theme</span>
+                        </button>
+                        <button type="button" onclick="toggleLanguage()" class="btn btn-secondary" id="lang-toggle-btn">FR</button>
+                        <button onclick="handleLogout()" class="btn btn-danger" data-i18n="btn_logout">Logout</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Container -->
+            <main class="main-content">
+                <button type="button" onclick="document.getElementById('main-sidebar').classList.toggle('collapsed')" class="btn btn-secondary floating-menu-btn" data-i18n="btn_toggle_menu">
+                    Toggle Menu
+                </button>
+
+                <div id="dashboard-tab" class="tab-content active">
+                    <h2 data-i18n="h_system_overview">System Overview</h2>
+                    <div class="panel" style="margin-bottom: 1.5rem;">
+                        <h3 id="welcome-heading">Welcome</h3>
+                        <p id="privilege-summary">Evaluating system operational metrics...</p>
+                    </div>
+
+                    <!-- Metrics Block -->
+                    <div class="metrics-summary-grid">
+                        <div class="metric-card"><h4 data-i18n="stat_active_staff">Active Staff</h4><p id="core-stat-staff" style="color: var(--primary-purple);">0</p></div>
+                        <div class="metric-card"><h4 data-i18n="stat_registered_clients">Registered Clients</h4><p id="core-stat-clients" style="color: #16a34a;">0</p></div>
+                        <div class="metric-card"><h4 data-i18n="stat_tracked_manifests">Tracked Manifests</h4><p id="core-stat-manifests" style="color: #ca8a04;">0</p></div>
+                    </div>
+
+                    <div class="panel">
+                        <h3 data-i18n="h_privilege_guide">System Privilege Guide</h3>
+                        <p style="margin-bottom: 1rem; color: var(--text-muted);" data-i18n="txt_privilege_desc">Your assigned access permissions determine your interaction scopes across data modules:</p>
+                        <div class="table-responsive">
+                            <table style="margin-bottom: 0;">
+                                <thead>
+                                    <tr><th data-i18n="th_tier">Privilege Tier</th><th data-i18n="th_view">View Data</th><th data-i18n="th_add">Add Data</th><th data-i18n="th_delete">Delete Data</th><th data-i18n="th_manage_staff">Manage Staff & Payroll</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><strong>Read</strong></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+                                    <tr><td><strong>Write</strong></td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                                    <tr><td><strong>Delete</strong></td><td>✅</td><td>✅</td><td>✅</td><td>❌</td></tr>
+                                    <tr><td><strong>Admin</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-tab" class="tab-content">
+                    <h2 data-i18n="h_my_profile">My Personal Profile Ledger</h2>
+                    <div class="management-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="panel">
+                            <div class="calendar-control-header">
+                                <span style="font-weight:700; font-size:1.1rem;" id="emp-self-title">My Attendance Records</span>
+                                <div style="display:flex; gap:0.25rem;">
+                                    <button type="button" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="shiftSelfMonth(-1)">◀</button>
+                                    <span id="self-calendar-month-string" style="font-weight:700; font-size:0.9rem; min-width:90px; text-align:center;">July 2026</span>
+                                    <button type="button" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="shiftSelfMonth(1)">▶</button>
+                                </div>
+                            </div>
+                            <div class="calendar-matrix-grid" id="self-calendar-grid"></div>
+                        </div>
+                        <div class="panel">
+                            <h3 data-i18n="h_weekly_pay">My Weekly Calculated Pay Index</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead><tr><th data-i18n="th_timeline">Timeline Row</th><th data-i18n="th_present">Present</th><th data-i18n="th_holidays">Holidays</th><th data-i18n="th_absences">Absences</th><th data-i18n="th_net_wage">Net Paid Wage</th></tr></thead>
+                                    <tbody id="self-payroll-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="employee-tab" class="tab-content">
+                    <h2 data-i18n="h_manage_team">Manage Team Members & Master Payroll</h2>
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <section class="panel">
+                            <h3 data-i18n="h_emp_registry">Employee Registry</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead><tr><th data-i18n="th_name">Name</th><th data-i18n="th_role">Role</th><th data-i18n="th_cin">CIN</th><th data-i18n="th_start_date">Starting Date</th><th data-i18n="th_daily_wage">Daily Wage</th><th data-i18n="th_privileges">Privileges</th><th id="th-actions" data-i18n="th_actions">Actions</th></tr></thead>
+                                    <tbody id="employee-list"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section class="panel" id="registration-panel">
+                            <h3 data-i18n="h_add_employee">Add New Employee</h3>
+                            <form id="employee-form" novalidate>
+                                <div class="form-group"><label for="emp-name" data-i18n="lbl_fullname">Full Name</label><input type="text" id="emp-name" class="form-control" required placeholder="e.g., John Doe"><div id="name-error" class="error-text">Please enter a valid full name string.</div></div>
+                                <div class="form-group"><label for="emp-role" data-i18n="lbl_role_desc">Role Description</label><input type="text" id="emp-role" class="form-control" required placeholder="e.g., Operations Lead"></div>
+                                <div class="form-group"><label for="emp-dob" data-i18n="lbl_dob">Date of Birth</label><input type="date" id="emp-dob" class="form-control" required></div>
+                                <div class="form-group"><label for="emp-cin" data-i18n="lbl_cin">ID Number (CIN)</label><input type="text" id="emp-cin" class="form-control" placeholder="e.g., 12345678"></div>
+                                <div class="form-group"><label for="emp-start-date" data-i18n="lbl_start_date">Starting Date</label><input type="date" id="emp-start-date" class="form-control"></div>
+                                <div class="form-group"><label for="emp-wage" data-i18n="lbl_daily_wage">Default Daily Wage (DT)</label><input type="number" id="emp-wage" class="form-control" required min="0" value="50"></div>
+                                <div class="form-group"><label data-i18n="lbl_sys_priv">System Privileges</label>
+                                    <div class="checkbox-group">
+                                        <label><input type="checkbox" name="privileges" value="Read"> Read</label>
+                                        <label><input type="checkbox" name="privileges" value="Write"> Write</label>
+                                        <label><input type="checkbox" name="privileges" value="Delete"> Delete</label>
+                                        <label><input type="checkbox" name="privileges" value="Admin"> Admin</label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" data-i18n="btn_commit_profile">Commit Corporate Profile</button>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="clients-tab" class="tab-content">
+                    <h2 data-i18n="h_clients_dir">Clients Directory</h2>
+                    <div class="clients-grid-container">
+                        <section class="panel">
+                            <h3 data-i18n="h_reg_clients">Registered Active Clients</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="th_client_entity">Client Entity</th><th data-i18n="th_sector">Sector</th><th data-i18n="th_address">Address</th><th data-i18n="th_mat_fiscale">Matricule Fiscale</th><th data-i18n="th_nsdd">N° BSDD</th><th data-i18n="th_contacts">Validated Contacts</th><th id="th-client-actions" data-i18n="th_actions">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="client-list"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="panel" id="client-registration-panel">
+                            <div class="panel-header-with-action">
+                                <h3 data-i18n="h_record_client">Record New Client Identity</h3>
+                                <button type="button" id="toggle-client-form-btn" class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.82rem;" onclick="toggleClientRegistrationForm()">Fold Panel</button>
+                            </div>
+                            <form id="client-form">
+                                <div class="form-group"><label for="client-name" data-i18n="lbl_client_name">Client Entity Name</label><input type="text" id="client-name" class="form-control" required placeholder="e.g., Hôpital El Alia"></div>
+                                <div class="form-group"><label for="client-sector" data-i18n="lbl_sector_cat">Sector Category</label><select id="client-sector" class="form-control" required><option value="Private">Private Sector (Requires Timbre Fiscal)</option><option value="Public">Public Sector (No Timbre Fiscal)</option></select></div>
+                                <div class="form-group"><label for="client-address" data-i18n="lbl_address">Physical Address</label><input type="text" id="client-address" class="form-control" required placeholder="e.g., 7016 EL ALIA"></div>
+                                <div class="form-group"><label for="client-mat-fiscale">Matricule Fiscale</label><input type="text" id="client-mat-fiscale" class="form-control" required placeholder="e.g., 648521 S"></div>
+                                <div class="form-group"><label for="client-nsdd">N° BSDD (Suivi des Déchets Dangereux)</label><input type="text" id="client-nsdd" class="form-control" required placeholder="e.g., 00374"></div>
+                                <div class="form-group"><label data-i18n="lbl_contact_matrix">Contact Validation Matrix Address</label>
+                                    <div id="client-contact-fields-wrapper">
+                                        <div class="contact-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <select class="form-control contact-type" style="flex: 1;" onchange="handleContactTypeChange(this)"><option value="email">Email Address</option><option value="phone">Phone (+216)</option></select>
+                                            <input type="email" class="form-control contact-value" required placeholder="name@domain.com" style="flex: 2;">
+                                            <button type="button" class="btn btn-secondary add-contact-btn" onclick="addContactRow('client')" style="padding: 0.6rem 1rem;">+</button>
+                                        </div>
+                                    </div>
+                                    <div id="client-contact-error" class="error-text">Verify contact number format: +216 followed by exactly 8 digits.</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" data-i18n="btn_save_client">Save Client File</button>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="pricing-tab" class="tab-content">
+                    <h2 data-i18n="h_waste_class">Rubbish Structural Classifications</h2>
+                    <div class="management-grid">
+                        <section class="panel" id="pricing-registration-panel">
+                            <h3 data-i18n="h_add_waste">Add Waste Metric Category</h3>
+                            <form id="pricing-form">
+                                <div class="form-group"><label for="waste-type" data-i18n="lbl_waste_class">Rubbish Structural Classification</label><input type="text" id="waste-type" class="form-control" required placeholder="e.g., médicaments périmés"></div>
+                                <button type="submit" class="btn btn-primary" data-i18n="btn_append_waste">Append Waste Category</button>
+                            </form>
+                        </section>
+                        <section class="panel">
+                            <h3 data-i18n="h_active_waste">Active Waste Categories Index</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead><tr><th data-i18n="th_waste_name">Waste Classification Name</th><th id="th-pricing-actions" data-i18n="th_actions">Actions</th></tr></thead>
+                                    <tbody id="pricing-list"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div id="bordereau-tab" class="tab-content">
+                    <h2 data-i18n="h_bordereau_ledger">Bordereau (Waste Manifest Tracking Ledger)</h2>
+                    <div class="clients-grid-container">
+                        
+                        <!-- 1. Active Bordereau Ledger Section -->
+                        <section class="panel">
+                            <h3 data-i18n="h_active_bordereau">Active Waste Tracking Bordereau Ledger</h3>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th data-i18n="th_target_client">Target Client</th>
+                                            <th data-i18n="th_rubbish_type">Rubbish Type</th>
+                                            <th data-i18n="th_quantity">Quantity</th>
+                                            <th data-i18n="th_billed_breakdown">Billed Breakdown (HT)</th>
+                                            <th data-i18n="th_applied_tax">Applied Tax Rules & Stamp</th>
+                                            <th data-i18n="th_final_price">Final Price (TTC)</th>
+                                            <th data-i18n="th_dates">Dates (Coll / Dest)</th>
+                                            <th id="th-bordereau-actions" data-i18n="th_actions">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bordereau-list"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- 2. Create Bordereau Section -->
+                        <section class="panel" id="bordereau-registration-panel">
+                            <div class="panel-header-with-action">
+                                <h3 data-i18n="h_create_bordereau">Create Waste Tracking Bordereau</h3>
+                                <button type="button" id="toggle-bordereau-form-btn" class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.82rem;" onclick="toggleBordereauRegistrationForm()">
+                                    Fold Panel
+                                </button>
+                            </div>
+                            <form id="bordereau-form">
+                                <div class="form-group">
+                                    <label for="bordereau-client" data-i18n="lbl_assoc_client">Associated Corporate Client Entity</label>
+                                    <select id="bordereau-client" class="form-control" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bordereau-type" data-i18n="lbl_target_waste">Target Rubbish Classification Type</label>
+                                    <select id="bordereau-type" class="form-control" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bordereau-qty" data-i18n="lbl_coll_qty">Collected Manifest Quantity</label>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <input type="number" id="bordereau-qty" class="form-control" required min="0.01" step="0.01" placeholder="e.g., 900" style="flex: 2;">
+                                        <select id="bordereau-unit" class="form-control" style="flex: 1;">
+                                            <option value="Kg">Kg</option>
+                                            <option value="Tons">Tons</option>
+                                            <option value="Boxes">Boxes</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bordereau-rubbish-price" data-i18n="lbl_flat_rate">Rubbish Service Base Flat-Rate (HT / DT)</label>
+                                    <input type="number" id="bordereau-rubbish-price" class="form-control" required min="0" step="0.001" value="2800.000">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bordereau-transp-status" data-i18n="lbl_transp_status">Transportation Status Selection</label>
+                                    <select id="bordereau-transp-status" class="form-control" required onchange="toggleBordereauTransportationEngineFields()">
+                                        <option value="included" data-i18n="opt_transp_inc">Case 1: Transportation Included in Price</option>
+                                        <option value="separate" data-i18n="opt_transp_sep">Case 2: Transportation Billed Separately</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="bordereau-transp-fee-wrapper" style="display: none;">
+                                    <label for="bordereau-transp-price" data-i18n="lbl_transp_fee">Initial Transportation Fee Base (HT / DT)</label>
+                                    <input type="number" id="bordereau-transp-price" class="form-control" min="0" step="0.001" value="0">
+                                </div>
+
+                                <div class="calc-preview-container">
+                                    <span style="font-weight: 700; display: block; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.75rem; color: var(--purple-title);" data-i18n="lbl_tax_preview">Tunisian Tax Core Preview (Live)</span>
+                                    <div class="calc-preview-row"><span data-i18n="prev_rubbish_base">Rubbish Base (HT):</span> <span id="lbl-preview-rubbish-ht">0.000 DT</span></div>
+                                    <div class="calc-preview-row"><span data-i18n="prev_rubbish_tva">Rubbish TVA (19%):</span> <span id="lbl-preview-rubbish-tva">0.000 DT</span></div>
+                                    <div id="div-preview-transp-block" style="display: none; flex-direction: column;">
+                                        <div class="calc-preview-row"><span data-i18n="prev_transp_base">Transport Base (HT):</span> <span id="lbl-preview-transp-ht">0.000 DT</span></div>
+                                        <div class="calc-preview-row"><span data-i18n="prev_transp_tva">Transport TVA (7%):</span> <span id="lbl-preview-transp-tva">0.000 DT</span></div>
+                                    </div>
+                                    <div class="calc-preview-row" style="border-top: 1px dotted var(--border-color); padding-top: 0.25rem; margin-top: 0.25rem;">
+                                        <span data-i18n="prev_stamp">Fiscal Stamp (Timbre):</span> <span id="lbl-preview-timbre" style="font-weight: 600;">0.000 DT</span>
+                                    </div>
+                                    <div class="calc-preview-row calc-preview-total">
+                                        <span data-i18n="prev_total_ttc">Final Price (TTC):</span> <span id="lbl-preview-total-ttc">0.000 DT</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-top:1.2rem;">
+                                    <label for="bordereau-coll-date" data-i18n="lbl_coll_date">Official Date of Collection</label>
+                                    <input type="date" id="bordereau-coll-date" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bordereau-dest-date" data-i18n="lbl_dest_date">Scheduled Date of Destruction</label>
+                                    <input type="date" id="bordereau-dest-date" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary" data-i18n="btn_commit_bordereau">Commit to Active Bordereau Ledger</button>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="employee-profile-modal" class="modal-backdrop" onclick="closeEmployeeProfileModal(event)">
+        <div class="modal-wrapper">
+            <div class="modal-header-block">
+                <div>
+                    <h2 id="modal-emp-title-name" style="margin-bottom:0.1rem; border-bottom:none;">Employee Name</h2>
+                    <p id="modal-emp-subtitle-role" style="color:var(--text-muted); font-size:0.9rem;">Role Description</p>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="hideProfileModalDirect()">✕ Close</button>
+            </div>
+            <div class="modal-layout-split">
+                <div>
+                    <div class="calendar-control-header">
+                        <span style="font-weight:700; font-size:1rem; color: var(--purple-title);" data-i18n="m_calendar_logs">Calendar Logs Matrix</span>
+                        <div style="display:flex; gap:0.25rem;">
+                            <button type="button" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="shiftSelectedMonth(-1)">◀</button>
+                            <span id="calendar-month-year-view-string" style="font-weight:700; font-size:0.9rem; min-width:80px; text-align:center;">July 2026</span>
+                            <button type="button" class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="shiftSelectedMonth(1)">▶</button>
+                        </div>
+                    </div>
+                    <div class="status-radio-selector">
+                        <label style="background-color:#dcfce7; color:#16a34a;"><input type="radio" name="active-status-tool" value="present" checked> <span data-i18n="opt_present">Present</span></label>
+                        <label style="background-color:#fef3c7; color:#ca8a04;"><input type="radio" name="active-status-tool" value="holiday"> <span data-i18n="opt_holiday">Holiday</span></label>
+                        <label style="background-color:#fee2e2; color:#dc2626;"><input type="radio" name="active-status-tool" value="unjustified"> <span data-i18n="opt_absence">Absence</span></label>
+                    </div>
+                    <div class="calendar-matrix-grid" id="dynamic-calendar-grid-target"></div>
+                    <div style="margin-top:1.5rem;">
+                        <table style="font-size:0.85rem;">
+                            <thead><tr><th data-i18n="th_matrix_timeline">Matrix Timeline</th><th data-i18n="th_present_paid">Present (Paid)</th><th data-i18n="th_holiday">Holiday</th><th data-i18n="th_absence">Absence</th><th data-i18n="th_weekly_gross">Weekly Gross Pay</th></tr></thead>
+                            <tbody id="modal-payroll-calculation-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div style="border-left: 1px solid var(--border-color); padding-left:1rem;">
+                    <span style="font-weight:700; font-size:1rem; display:block; margin-bottom:1rem; color: var(--purple-title);" data-i18n="m_salary_advances">Salary Advances Ledger</span>
+                    <form id="advance-transaction-form" onsubmit="commitAdvancePaymentRecord(event)">
+                        <div class="form-group"><label style="font-size:0.8rem;" data-i18n="lbl_adv_value">Advance Value (DT)</label><input type="number" id="adv-amount-input" class="form-control" required min="1"></div>
+                        <div class="form-group"><label style="font-size:0.8rem;" data-i18n="lbl_date">Date</label><input type="date" id="adv-date-input" class="form-control" required></div>
+                        <button type="submit" class="btn btn-primary" data-i18n="btn_record_advance">Record Advance</button>
+                    </form>
+                    <div style="margin-top:1.25rem;">
+                        <div class="ledger-scrollbox">
+                            <table style="font-size:0.85rem;">
+                                <thead><tr><th data-i18n="th_date">Date</th><th data-i18n="th_amount">Amount</th></tr></thead>
+                                <tbody id="ledger-history-tbody-target"></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:0.5rem; text-align:right; font-weight:700;"><span data-i18n="lbl_total_issued">Total Issued:</span> <span id="ledger-total-adv-sum" style="color:#ef4444;">0 DT</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bordereau-inspector-modal" class="modal-backdrop" onclick="closeBordereauInspectorModal(event)">
+        <div class="modal-wrapper" style="max-width: 1250px;">
+            <div class="modal-header-block">
+                <div>
+                    <h2 style="border-bottom:none; margin-bottom:0.1rem;" data-i18n="m_workspace_title">Bordereau Document Workspace Manager</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="m_workspace_subtitle">Dynamically generating legal logs from target ledger data entry fields</p>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="hideBordereauInspectorDirect()" data-i18n="btn_close_workspace">✕ Close Workspace</button>
+            </div>
+
+            <div class="modal-layout-split">
+                <div class="panel" style="margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="document-paper-preview" id="print-target-receipt-markup">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #000000; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                <div class="doc-header-text">
+                                    <strong>Société Global Environnement Guesmi</strong><br>
+                                    MF : 1882808 X/A/M/000<br>
+                                    Tél gérant : 95 836830<br>
+                                    Tél administration : 95 846830<br>
+                                    Route de Gabès km 6.5, ZI Sidi Selem – Sfax 3083<br>
+                                    <span style="white-space: nowrap;">Mail : globalenvironnement.das@gmail.com</span>
+                                </div>
+                                <div style="text-align: right; font-size: 0.9rem; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                                    <img src="static/logo.jpg" alt="Company Logo" style="height: 50px; object-fit: contain;">
+                                    <div style="white-space: nowrap;">
+                                        <strong style="font-size: 1.05rem;">FACTURE N°<span id="f-invoice-num">--</span>/2026</strong><br>
+                                        <span style="white-space: nowrap;">DATE: <span id="f-invoice-date">--</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5; background: #f8fafc; padding: 0.8rem; border-radius: 4px;">
+                                <div><strong>Client :</strong> <span id="f-client-name">--</span></div>
+                                <div><strong>Adresse :</strong> <span id="f-client-address">--</span></div>
+                                <div><strong>MF :</strong> <span id="f-client-mf">--</span></div>
+                            </div>
+
+                            <table class="doc-table">
+                                <thead>
+                                    <tr><th>Description</th><th>Quantité</th><th>PU</th><th>TVA</th><th>Montant HT</th></tr>
+                                </thead>
+                                <tbody id="f-invoice-items-body"></tbody>
+                            </table>
+
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                <table style="width: 250px; border-collapse: collapse; font-size: 0.9rem;">
+                                    <tr><td style="padding: 0.3rem 0;">Total HT</td><td style="text-align: right; font-weight: bold;"><span id="f-total-ht">--</span> DT</td></tr>
+                                    <tr><td style="padding: 0.3rem 0;">Taxes (TVA)</td><td style="text-align: right; font-weight: bold;"><span id="f-total-tva">--</span> DT</td></tr>
+                                    <tr><td style="padding: 0.3rem 0; border-bottom: 1px solid #000000;">Timbre</td><td style="text-align: right; font-weight: bold; border-bottom: 1px solid #000000;"><span id="f-timbre">--</span> DT</td></tr>
+                                    <tr style="font-size: 1.05rem;"><td style="padding: 0.5rem 0; font-weight: bold;">Total</td><td style="text-align: right; font-weight: bold;"><span id="f-total-ttc">--</span> DT</td></tr>
+                                </table>
+                            </div>
+
+                            <p class="doc-body-paragraph" style="margin-top: 1.5rem; font-style: italic; border-top: 1px dashed #000000; padding-top: 0.5rem; font-size: 0.85rem;">
+                                Arrêtée la présente facture à la somme de : <strong id="f-amount-words">--</strong>
+                            </p>
+                            <div class="doc-footer-signature">Le gérant,<br>Mohamed Guesmi</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success" style="margin-top: 1rem;" onclick="executePrintStreamProtocol('print-target-receipt-markup', 'Facture Log Output')" data-i18n="btn_print_invoice">Print Facture / Reçu</button>
+                </div>
+
+                <div class="panel" style="margin: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="document-paper-preview" id="print-target-attestation-markup" style="font-family: 'Times New Roman', Times, serif; line-height: 1.6;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000000; padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+                                <div>
+                                    <strong style="font-size: 1.05rem;">Global Environnement Guesmi</strong><br>
+                                    <small>
+                                        Tél gérant : 95 836830<br>
+                                        Tél administration : 95 846830<br>
+                                        Route de Gabès km 6.5, ZI Sidi Selem – Sfax 3083<br>
+                                        <span style="white-space: nowrap;">Mail : globalenvironnement.das@gmail.com</span>
+                                    </small>
+                                </div>
+                                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+                                    <img src="static/logo.jpg" alt="Global Environnement Logo" style="height: 50px; object-fit: contain;">
+                                    <div class="doc-meta-right" style="margin-bottom:0; white-space: nowrap;">Sfax, le <span id="a-doc-date">--</span></div>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 1rem; margin-bottom: 1.5rem; line-height: 1.4;">
+                                <strong><span id="a-client-header-name">--</span></strong><br>
+                                <span id="a-client-header-address">--</span><br>
+                                MF : <span id="a-client-header-mf">--</span>
+                            </div>
+
+                            <div class="doc-title-centered">Attestation de destruction</div>
+                            <div style="font-weight: bold; margin-bottom: 1rem; font-size: 1rem;">Ref_BSDD N°<span id="a-ref-bsdd">--</span></div>
+
+                            <p class="doc-body-paragraph">
+                                Nous, la société <strong>Global Environnement Guesmi</strong> autorisée par le Ministère de l’Environnement pour l’activité de collecte, transport et traitement des Déchets d’Activité de Soin à Risque Infectieux et pharmaceutiques Autorisation N° 15-2024 ; ayant son siège social à la Zone industrielle Sidi Selem –Route de Gabès km 6,5 –Thyna 3083 - Sfax Sud ; Immatriculée au Registre National des entreprises sous le Numéro 1882808 X ; représenté par son gérant Monsieur Mohamed Guesmi ;
+                            </p>
+                            <p class="doc-body-paragraph">
+                                Atteste par la présente que notre société a procédé à la destruction de <span id="a-waste-type" style="font-weight: bold;">--</span> à la propriété du client: <strong id="a-client-body-name">--</strong> et ce conformément aux détails mentionnés dans le tableau ci-dessous :
+                            </p>
+
+                            <table class="doc-table" style="text-align: center;">
+                                <thead>
+                                    <tr><th>BSDD N°</th><th>Date de réception</th><th>Date de fin destruction</th><th>Quantité</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="a-tbl-bsdd">--</td>
+                                        <td id="a-tbl-coll">--</td>
+                                        <td id="a-tbl-dest">--</td>
+                                        <td id="a-tbl-qty" style="font-weight: bold;">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <p class="doc-body-paragraph" style="font-size: 0.85rem; margin-top: 1rem;">
+                                L'opération de destruction inclut le broyage, l'inertage à la chaux, suivie de la solidification au ciment. Les déchets ainsi stabilisés sont ensuite éliminés dans une décharge contrôlée, conformément à la réglementation en vigueur.
+                            </p>
+                            <p class="doc-body-paragraph">
+                                La présente attestation est délivrée au client: <span id="a-client-footer-name" style="font-weight: bold;">--</span> pour servir et valoir ce que de droit.
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" style="margin-top: 1rem;" onclick="executePrintStreamProtocol('print-target-attestation-markup', 'Attestation Log Output')" data-i18n="btn_print_attestation">Print Official Attestation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script Engine -->
+    <script>
+        const PROTOCOL_HR_KEY = "19100576";
+        let employees = [];
+        let clients = [];
+        let wastePrices = [];
+        let bordereaux = [];
+        let currentUser = null;
+
+        let selectedEmployeeIndex = null;
+        let selectedBordereauIndex = null;
+        let calendarTargetDate = new Date(2026, 6, 1);
+        let selfCalendarTargetDate = new Date(2026, 6, 1);
+        let currentLanguage = localStorage.getItem('company_lang') || 'en';
+
+        const translations = {
+            en: {
+                nav_overview: "Overview",
+                nav_profile: "My Profile",
+                nav_employees: "Employees",
+                nav_clients: "Clients",
+                nav_waste: "Waste Categories",
+                nav_bordereau: "Bordereau",
+                btn_theme: "Theme",
+                btn_logout: "Logout",
+                btn_toggle_menu: "Toggle Menu",
+                h_system_overview: "System Overview",
+                stat_active_staff: "Active Staff",
+                stat_registered_clients: "Registered Clients",
+                stat_tracked_manifests: "Tracked Manifests",
+                h_privilege_guide: "System Privilege Guide",
+                txt_privilege_desc: "Your assigned access permissions determine your interaction scopes across data modules:",
+                th_tier: "Privilege Tier",
+                th_view: "View Data",
+                th_add: "Add Data",
+                th_delete: "Delete Data",
+                th_manage_staff: "Manage Staff & Payroll",
+                h_my_profile: "My Personal Profile Ledger",
+                h_weekly_pay: "My Weekly Calculated Pay Index",
+                th_timeline: "Timeline Row",
+                th_present: "Present",
+                th_holidays: "Holidays",
+                th_absences: "Absences",
+                th_net_wage: "Net Paid Wage",
+                h_manage_team: "Manage Team Members & Master Payroll",
+                h_emp_registry: "Employee Registry",
+                th_name: "Name",
+                th_role: "Role",
+                th_cin: "CIN",
+                th_start_date: "Starting Date",
+                th_daily_wage: "Daily Wage",
+                th_privileges: "Privileges",
+                th_actions: "Actions",
+                h_add_employee: "Add New Employee",
+                lbl_fullname: "Full Name",
+                lbl_role_desc: "Role Description",
+                lbl_dob: "Date of Birth",
+                lbl_cin: "ID Number (CIN)",
+                lbl_start_date: "Starting Date",
+                lbl_daily_wage: "Default Daily Wage (DT)",
+                lbl_sys_priv: "System Privileges",
+                btn_commit_profile: "Commit Corporate Profile",
+                h_clients_dir: "Clients Directory",
+                h_reg_clients: "Registered Active Clients",
+                th_client_entity: "Client Entity",
+                th_sector: "Sector",
+                th_address: "Address",
+                th_mat_fiscale: "Matricule Fiscale",
+                th_nsdd: "N° BSDD",
+                th_contacts: "Validated Contacts",
+                h_record_client: "Record New Client Identity",
+                lbl_client_name: "Client Entity Name",
+                lbl_sector_cat: "Sector Category",
+                lbl_address: "Physical Address",
+                lbl_contact_matrix: "Contact Validation Matrix Address",
+                btn_save_client: "Save Client File",
+                h_waste_class: "Rubbish Structural Classifications",
+                h_add_waste: "Add Waste Metric Category",
+                lbl_waste_class: "Rubbish Structural Classification",
+                btn_append_waste: "Append Waste Category",
+                h_active_waste: "Active Waste Categories Index",
+                th_waste_name: "Waste Classification Name",
+                h_bordereau_ledger: "Bordereau (Waste Manifest Tracking Ledger)",
+                h_active_bordereau: "Active Waste Tracking Bordereau Ledger",
+                th_target_client: "Target Client",
+                th_rubbish_type: "Rubbish Type",
+                th_quantity: "Quantity",
+                th_billed_breakdown: "Billed Breakdown (HT)",
+                th_applied_tax: "Applied Tax Rules & Stamp",
+                th_final_price: "Final Price (TTC)",
+                th_dates: "Dates (Coll / Dest)",
+                h_create_bordereau: "Create Waste Tracking Bordereau",
+                lbl_assoc_client: "Associated Corporate Client Entity",
+                lbl_target_waste: "Target Rubbish Classification Type",
+                lbl_coll_qty: "Collected Manifest Quantity",
+                lbl_flat_rate: "Rubbish Service Base Flat-Rate (HT / DT)",
+                lbl_transp_status: "Transportation Status Selection",
+                opt_transp_inc: "Case 1: Transportation Included in Price",
+                opt_transp_sep: "Case 2: Transportation Billed Separately",
+                lbl_transp_fee: "Initial Transportation Fee Base (HT / DT)",
+                lbl_tax_preview: "Tunisian Tax Core Preview (Live)",
+                prev_rubbish_base: "Rubbish Base (HT):",
+                prev_rubbish_tva: "Rubbish TVA (19%):",
+                prev_transp_base: "Transport Base (HT):",
+                prev_transp_tva: "Transport TVA (7%):",
+                prev_stamp: "Fiscal Stamp (Timbre):",
+                prev_total_ttc: "Final Price (TTC):",
+                lbl_coll_date: "Official Date of Collection",
+                lbl_dest_date: "Scheduled Date of Destruction",
+                btn_commit_bordereau: "Commit to Active Bordereau Ledger",
+                m_calendar_logs: "Calendar Logs Matrix",
+                opt_present: "Present",
+                opt_holiday: "Holiday",
+                opt_absence: "Absence",
+                th_matrix_timeline: "Matrix Timeline",
+                th_present_paid: "Present (Paid)",
+                th_holiday: "Holiday",
+                th_absence: "Absence",
+                th_weekly_gross: "Weekly Gross Pay",
+                m_salary_advances: "Salary Advances Ledger",
+                lbl_adv_value: "Advance Value (DT)",
+                lbl_date: "Date",
+                btn_record_advance: "Record Advance",
+                th_date: "Date",
+                th_amount: "Amount",
+                lbl_total_issued: "Total Issued:",
+                m_workspace_title: "Bordereau Document Workspace Manager",
+                m_workspace_subtitle: "Dynamically generating legal logs from target ledger data entry fields",
+                btn_close_workspace: "✕ Close Workspace",
+                btn_print_invoice: "Print Facture / Reçu",
+                btn_print_attestation: "Print Official Attestation",
+                btn_delete: "Delete"
+            },
+            fr: {
+                nav_overview: "Vue d'ensemble",
+                nav_profile: "Mon Profil",
+                nav_employees: "Employés",
+                nav_clients: "Clients",
+                nav_waste: "Catégories de Déchets",
+                nav_bordereau: "Bordereau",
+                btn_theme: "Thème",
+                btn_logout: "Déconnexion",
+                btn_toggle_menu: "Menu",
+                h_system_overview: "Aperçu du Système",
+                stat_active_staff: "Personnel Actif",
+                stat_registered_clients: "Clients Enregistrés",
+                stat_tracked_manifests: "Manifestes Suivis",
+                h_privilege_guide: "Guide des Privilèges du Système",
+                txt_privilege_desc: "Vos permissions d'accès déterminent vos champs d'interaction à travers les modules :",
+                th_tier: "Niveau de Privilège",
+                th_view: "Voir Données",
+                th_add: "Ajouter Données",
+                th_delete: "Supprimer Données",
+                th_manage_staff: "Gérer Personnel & Paie",
+                h_my_profile: "Mon Registre de Profil Personnel",
+                h_weekly_pay: "Mon Index de Rémunération Hebdomadaire",
+                th_timeline: "Ligne Chronologique",
+                th_present: "Présent",
+                th_holidays: "Jours Fériés",
+                th_absences: "Absences",
+                th_net_wage: "Salaire Net Payé",
+                h_manage_team: "Gestion des Équipes & Paie Principale",
+                h_emp_registry: "Registre des Employés",
+                th_name: "Nom",
+                th_role: "Rôle",
+                th_cin: "CIN",
+                th_start_date: "Date de Début",
+                th_daily_wage: "Salaire Journalier",
+                th_privileges: "Privilèges",
+                th_actions: "Actions",
+                h_add_employee: "Ajouter un Nouvel Employé",
+                lbl_fullname: "Nom Complet",
+                lbl_role_desc: "Description du Rôle",
+                lbl_dob: "Date de Naissance",
+                lbl_cin: "Numéro CIN",
+                lbl_start_date: "Date de Début",
+                lbl_daily_wage: "Salaire Journalier par Défaut (DT)",
+                lbl_sys_priv: "Privilèges Système",
+                btn_commit_profile: "Enregistrer le Profil",
+                h_clients_dir: "Répertoire des Clients",
+                h_reg_clients: "Clients Actifs Enregistrés",
+                th_client_entity: "Entité Client",
+                th_sector: "Secteur",
+                th_address: "Adresse",
+                th_mat_fiscale: "Matricule Fiscale",
+                th_nsdd: "N° BSDD",
+                th_contacts: "Contacts Validés",
+                h_record_client: "Enregistrer une Nouvelle Identité Client",
+                lbl_client_name: "Nom de l'Entité Client",
+                lbl_sector_cat: "Catégorie de Secteur",
+                lbl_address: "Adresse Physique",
+                lbl_contact_matrix: "Adresse de Matrice de Validation",
+                btn_save_client: "Enregistrer le Fichier Client",
+                h_waste_class: "Classifications Structurelles des Déchets",
+                h_add_waste: "Ajouter une Catégorie de Déchet",
+                lbl_waste_class: "Classification Structurelle des Déchets",
+                btn_append_waste: "Ajouter la Catégorie",
+                h_active_waste: "Index des Catégories Actives",
+                th_waste_name: "Nom de la Classification",
+                h_bordereau_ledger: "Bordereau (Registre de Suivi des Déchets)",
+                h_active_bordereau: "Registre Actif des Bordereaux de Suivi",
+                th_target_client: "Client Cible",
+                th_rubbish_type: "Type de Déchet",
+                th_quantity: "Quantité",
+                th_billed_breakdown: "Ventilation Facturée (HT)",
+                th_applied_tax: "Règles Fiscales & Timbre",
+                th_final_price: "Prix Final (TTC)",
+                th_dates: "Dates (Coll / Dest)",
+                h_create_bordereau: "Créer un Bordereau de Suivi de Déchets",
+                lbl_assoc_client: "Entité Client Corporate Associée",
+                lbl_target_waste: "Type de Classification de Déchet Cible",
+                lbl_coll_qty: "Quantité du Manifeste Collecté",
+                lbl_flat_rate: "Forfait de Base du Service Déchet (HT / DT)",
+                lbl_transp_status: "Sélection du Statut de Transport",
+                opt_transp_inc: "Cas 1 : Transport Inclus dans le Prix",
+                opt_transp_sep: "Cas 2 : Transport Facturé Séparément",
+                lbl_transp_fee: "Base Initiale des Frais de Transport (HT / DT)",
+                lbl_tax_preview: "Aperçu de la Fiscalité Tunisienne (En direct)",
+                prev_rubbish_base: "Base Déchets (HT) :",
+                prev_rubbish_tva: "TVA Déchets (19%) :",
+                prev_transp_base: "Base Transport (HT) :",
+                prev_transp_tva: "TVA Transport (7%) :",
+                prev_stamp: "Timbre Fiscal :",
+                prev_total_ttc: "Prix Final (TTC) :",
+                lbl_coll_date: "Date Officielle de Collecte",
+                lbl_dest_date: "Date Prévue de Destruction",
+                btn_commit_bordereau: "Valider dans le Registre des Bordereaux",
+                m_calendar_logs: "Matrice des Journaux de Présence",
+                opt_present: "Présent",
+                opt_holiday: "Férié",
+                opt_absence: "Absence",
+                th_matrix_timeline: "Chronologie de Matrice",
+                th_present_paid: "Présent (Payé)",
+                th_holiday: "Férié",
+                th_absence: "Absence",
+                th_weekly_gross: "Brut Hebdomadaire",
+                m_salary_advances: "Registre des Avances sur Salaire",
+                lbl_adv_value: "Valeur de l'Avance (DT)",
+                lbl_date: "Date",
+                btn_record_advance: "Enregistrer l'Avance",
+                th_date: "Date",
+                th_amount: "Montant",
+                lbl_total_issued: "Total Émis :",
+                m_workspace_title: "Gestionnaire de Documents Bordereau",
+                m_workspace_subtitle: "Génération dynamique de registres légaux à partir des données de saisie",
+                btn_close_workspace: "✕ Fermer l'Espace",
+                btn_print_invoice: "Imprimer Facture / Reçu",
+                btn_print_attestation: "Imprimer l'Attestation Officielle",
+                btn_delete: "Supprimer"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'fr' : 'en';
+            localStorage.setItem('company_lang', currentLanguage);
+            applyTranslations();
+            renderEmployees();
+            renderClients();
+            renderWastePrices();
+        }
+
+        function applyTranslations() {
+            document.getElementById('lang-toggle-btn').innerText = currentLanguage === 'en' ? 'FR' : 'EN';
+            const dict = translations[currentLanguage];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerText = dict[key];
+                }
+            });
+        }
+
+        function initDatabase() {
+            employees = JSON.parse(localStorage.getItem('company_directory')) || [{ name: "Karim Fakhfakh", role: "Stagiere", cin: "14253647", startDate: "2026-06-01", dob: "2007-08-29", privileges: ["Admin"], dailyWage: 80, attendance: {}, advances: [] }];
+            clients = JSON.parse(localStorage.getItem('company_clients')) || [
+                { name: "Hôpital El Alia", sector: "Public", address: "7016 EL ALIA", matFiscale: "648521 S", nsdd: "00374", contacts: [{ type: "email", value: "contact@elalia.gov.tn" }] },
+                { name: "Pharmacie FAYCAL SASSI", sector: "Private", address: "10, Avenue Beit El Hekma Mansoura, 3100 Kairouan", matFiscale: "0142970 G/P/C/000", nsdd: "000042", contacts: [{ type: "email", value: "contact@pharmaciesassi.tn" }] }
+            ];
+            wastePrices = JSON.parse(localStorage.getItem('company_waste_prices')) || [
+                { type: "médicaments périmés" }, { type: "produits pharmaceutiques périmés" }, { type: "Plastic (PET)" }, { type: "Electronic Waste" }
+            ];
+            bordereaux = JSON.parse(localStorage.getItem('company_bordereaux')) || [
+                { client: "Hôpital El Alia", type: "médicaments périmés", quantity: 900, unit: "Kg", rubbishBaseHT: "2800.000", transportStatus: "included", transportBaseHT: "0.000", timbreFee: "0.000", totalTTC: "3332.000", collectionDate: "2026-06-15", destructionDate: "2026-06-17" },
+                { client: "Pharmacie FAYCAL SASSI", type: "produits pharmaceutiques périmés", quantity: 1, unit: "Boxes", rubbishBaseHT: "2800.000", transportStatus: "included", transportBaseHT: "0.000", timbreFee: "1.000", totalTTC: "3333.000", collectionDate: "2025-01-07", destructionDate: "2025-01-07" }
+            ];
+            
+            employees.forEach(emp => {
+                if (!emp.attendance) emp.attendance = {};
+                if (!emp.advances) emp.advances = [];
+                if (emp.dailyWage === undefined) emp.dailyWage = 50;
+                if (emp.cin === undefined) emp.cin = "";
+                if (emp.startDate === undefined) emp.startDate = "";
+            });
+
+            syncLocalStorage();
+            updateThemeToggleButtonUI();
+            applyTranslations();
+
+            document.getElementById('bordereau-client').addEventListener('change', executeLiveTunisianFiscalCalculator);
+            document.getElementById('bordereau-rubbish-price').addEventListener('input', executeLiveTunisianFiscalCalculator);
+            document.getElementById('bordereau-transp-price').addEventListener('input', executeLiveTunisianFiscalCalculator);
+
+            document.getElementById('bordereau-coll-date').value = "2026-07-02";
+            document.getElementById('bordereau-dest-date').value = "2026-07-09";
+        }
+
+        function syncLocalStorage() {
+            localStorage.setItem('company_directory', JSON.stringify(employees));
+            localStorage.setItem('company_clients', JSON.stringify(clients));
+            localStorage.setItem('company_waste_prices', JSON.stringify(wastePrices));
+            localStorage.setItem('company_bordereaux', JSON.stringify(bordereaux));
+            updateOverviewMetricsDisplay();
+        }
+
+        function updateOverviewMetricsDisplay() {
+            if(document.getElementById('core-stat-staff')) document.getElementById('core-stat-staff').innerText = employees.length;
+            if(document.getElementById('core-stat-clients')) document.getElementById('core-stat-clients').innerText = clients.length;
+            if(document.getElementById('core-stat-manifests')) document.getElementById('core-stat-manifests').innerText = bordereaux.length;
+        }
+
+        function executeSystemThemeToggle() {
+            document.body.classList.toggle('dark-theme');
+            localStorage.setItem('company_theme_config', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+            updateThemeToggleButtonUI();
+        }
+
+        function updateThemeToggleButtonUI() {
+            if (document.getElementById('theme-icon-indicator')) {
+                document.getElementById('theme-icon-indicator').innerText = document.body.classList.contains('dark-theme') ? "☀️" : "🌙";
+            }
+        }
+
+        function setLoginMode(mode) {
+            document.querySelectorAll('.login-toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.login-form-view').forEach(v => v.classList.remove('active'));
+            document.getElementById('staff-auth-error').style.display = 'none';
+            document.getElementById('hr-auth-error').style.display = 'none';
+            if (mode === 'staff') { document.getElementById('tab-btn-staff').classList.add('active'); document.getElementById('view-staff').classList.add('active'); } 
+            else { document.getElementById('tab-btn-hr').classList.add('active'); document.getElementById('view-hr').classList.add('active'); }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            const clickedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+            if (clickedBtn) clickedBtn.classList.add('active');
+            if (tabId === 'profile-tab') renderEmployeeSelfServiceView();
+        }
+
+        const staffLoginForm = document.getElementById('staff-login-form');
+        const hrLoginForm = document.getElementById('hr-login-form');
+
+        staffLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputName = document.getElementById('login-name').value.trim();
+            const inputRole = document.getElementById('login-role').value.trim();
+            const matchedUser = employees.find(emp => emp.name.toLowerCase() === inputName.toLowerCase() && emp.role.toLowerCase() === inputRole.toLowerCase());
+            if (matchedUser) executeLoginSession(matchedUser); else document.getElementById('staff-auth-error').style.display = 'block';
+        });
+
+        hrLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputCode = document.getElementById('hr-code').value;
+            if (inputCode === PROTOCOL_HR_KEY) {
+                executeLoginSession({ name: "System Administrator", role: "HR Systems Core Manager", privileges: ["Read", "Write", "Delete", "Admin"] });
+            } else {
+                document.getElementById('hr-auth-error').style.display = 'block';
+            }
+        });
+
+        function executeLoginSession(user) {
+            currentUser = user;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard-wrapper').style.display = 'block';
+            document.getElementById('current-user-display').innerText = `Connected: ${user.name} (${user.role})`;
+            document.getElementById('welcome-heading').innerText = `Welcome back, ${user.name}!`;
+            document.getElementById('privilege-summary').innerHTML = `Terminal Clearance Authorization: ` + user.privileges.map(p => `<span class="badge ${p.toLowerCase()}">${p}</span>`).join(' ');
+            
+            applyRoleBasedAccessControls(); renderEmployees(); renderClients(); renderWastePrices(); populateBordereauDropdowns(); renderBordereaux(); executeLiveTunisianFiscalCalculator(); updateOverviewMetricsDisplay();
+            
+            if (currentUser.privileges.includes('Admin')) switchTab('dashboard-tab'); else switchTab('profile-tab');
+        }
+
+        function handleLogout() {
+            currentUser = null; staffLoginForm.reset(); hrLoginForm.reset();
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('dashboard-wrapper').style.display = 'none';
+            setLoginMode('staff');
+        }
+
+        function applyRoleBasedAccessControls() {
+            const hasAdmin = currentUser.privileges.includes('Admin');
+            const hasWrite = currentUser.privileges.includes('Write');
+            const hasRead = currentUser.privileges.includes('Read');
+            const hasDelete = currentUser.privileges.includes('Delete');
+
+            document.getElementById('nav-emp-tab').style.display = hasAdmin ? 'flex' : 'none';
+            document.getElementById('nav-profile-tab').style.display = !hasAdmin ? 'flex' : 'none';
+            document.getElementById('nav-client-tab').style.display = (hasRead || hasWrite || hasAdmin || hasDelete) ? 'flex' : 'none';
+            document.getElementById('nav-pricing-tab').style.display = (hasRead || hasWrite || hasAdmin || hasDelete) ? 'flex' : 'none';
+            document.getElementById('nav-bordereau-tab').style.display = (hasRead || hasWrite || hasAdmin || hasDelete) ? 'flex' : 'none';
+
+            document.getElementById('registration-panel').style.display = hasAdmin ? 'block' : 'none';
+            document.getElementById('client-registration-panel').style.display = (hasWrite || hasAdmin) ? 'block' : 'none';
+            document.getElementById('pricing-registration-panel').style.display = (hasWrite || hasAdmin) ? 'block' : 'none';
+            document.getElementById('bordereau-registration-panel').style.display = (hasWrite || hasAdmin) ? 'block' : 'none';
+
+            document.getElementById('th-actions').style.display = (hasDelete || hasAdmin) ? 'table-cell' : 'none';
+            document.getElementById('th-client-actions').style.display = (hasDelete || hasAdmin) ? 'table-cell' : 'none';
+            document.getElementById('th-pricing-actions').style.display = (hasDelete || hasAdmin) ? 'table-cell' : 'none';
+            document.getElementById('th-bordereau-actions').style.display = (hasDelete || hasAdmin) ? 'table-cell' : 'none';
+        }
+
+        function toggleClientRegistrationForm() {
+            const form = document.getElementById('client-form');
+            const btn = document.getElementById('toggle-client-form-btn');
+            if (form.style.display === 'none') { form.style.display = 'block'; btn.innerText = 'Fold Panel'; } 
+            else { form.style.display = 'none'; btn.innerText = 'Record New Client Identity'; }
+        }
+
+        function toggleBordereauRegistrationForm() {
+            const form = document.getElementById('bordereau-form');
+            const btn = document.getElementById('toggle-bordereau-form-btn');
+            if (form.style.display === 'none') { form.style.display = 'block'; btn.innerText = 'Fold Panel'; } 
+            else { form.style.display = 'none'; btn.innerText = 'Create Bordereau'; }
+        }
+
+        function handleContactTypeChange(selectElement) {
+            const inputField = selectElement.nextElementSibling;
+            if (selectElement.value === 'phone') { inputField.type = 'text'; inputField.placeholder = '+216 55 123 456'; inputField.value = '+216 '; } 
+            else { inputField.type = 'email'; inputField.placeholder = 'name@domain.com'; inputField.value = ''; }
+        }
+
+        function addContactRow(section) {
+            const wrapper = document.getElementById(`${section}-contact-fields-wrapper`);
+            if (wrapper.children.length >= 2) return; 
+            wrapper.querySelector('.add-contact-btn').style.display = 'none';
+
+            const newRow = document.createElement('div');
+            newRow.className = 'contact-row';
+            newRow.style = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+            newRow.innerHTML = `
+                <select class="form-control contact-type" style="flex: 1;" onchange="handleContactTypeChange(this)"><option value="email">Email Address</option><option value="phone">Phone (+216)</option></select>
+                <input type="email" class="form-control contact-value" required placeholder="name@domain.com" style="flex: 2;">
+                <button type="button" class="btn btn-danger" onclick="removeContactRow(this, '${section}')" style="padding: 0.6rem 1rem;">-</button>
+            `;
+            wrapper.appendChild(newRow);
+        }
+
+        function removeContactRow(buttonElement, section) {
+            buttonElement.parentElement.remove();
+            document.getElementById(`${section}-contact-fields-wrapper`).querySelector('.add-contact-btn').style.display = 'block';
+        }
+
+        function populateBordereauDropdowns() {
+            const clientSelect = document.getElementById('bordereau-client');
+            const typeSelect = document.getElementById('bordereau-type');
+            clientSelect.innerHTML = clients.length === 0 ? '<option value="">-- No Clients --</option>' : clients.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+            typeSelect.innerHTML = wastePrices.map(w => `<option value="${escapeHtml(w.type)}">${escapeHtml(w.type)}</option>`).join('');
+        }
+
+        function toggleBordereauTransportationEngineFields() {
+            const transportStatus = document.getElementById('bordereau-transp-status').value;
+            const feeWrapper = document.getElementById('bordereau-transp-fee-wrapper');
+            const previewBlock = document.getElementById('div-preview-transp-block');
+            if (transportStatus === 'separate') { feeWrapper.style.display = 'block'; previewBlock.style.display = 'flex'; } 
+            else { feeWrapper.style.display = 'none'; previewBlock.style.display = 'none'; document.getElementById('bordereau-transp-price').value = 0; }
+            executeLiveTunisianFiscalCalculator();
+        }
+
+        function executeLiveTunisianFiscalCalculator() {
+            const clientName = document.getElementById('bordereau-client').value;
+            if(!clientName) return;
+            const rubbishBaseHT = parseFloat(document.getElementById('bordereau-rubbish-price').value) || 0;
+            const transportStatus = document.getElementById('bordereau-transp-status').value;
+            const transportBaseHT = parseFloat(document.getElementById('bordereau-transp-price').value) || 0;
+
+            const targetClientObj = clients.find(c => c.name === clientName);
+            const isPrivateClient = (targetClientObj && targetClientObj.sector === 'Private');
+            const timbreFee = isPrivateClient ? 1.000 : 0.000;
+
+            const rubbishTVA = rubbishBaseHT * 0.19;
+            let transportTVA = 0;
+            let combinedTTC = rubbishBaseHT + rubbishTVA + timbreFee;
+
+            if (transportStatus === 'separate') { transportTVA = transportBaseHT * 0.07; combinedTTC += (transportBaseHT + transportTVA); }
+
+            document.getElementById('lbl-preview-rubbish-ht').innerText = `${rubbishBaseHT.toFixed(3)} DT`;
+            document.getElementById('lbl-preview-rubbish-tva').innerText = `${rubbishTVA.toFixed(3)} DT (19%)`;
+            document.getElementById('lbl-preview-transp-ht').innerText = `${transportBaseHT.toFixed(3)} DT`;
+            document.getElementById('lbl-preview-transp-tva').innerText = `${transportTVA.toFixed(3)} DT (7%)`;
+            document.getElementById('lbl-preview-timbre').innerText = `${timbreFee.toFixed(3)} DT`;
+            document.getElementById('lbl-preview-total-ttc').innerText = `${combinedTTC.toFixed(3)} DT`;
+        }
+
+        const employeeForm = document.getElementById('employee-form');
+        const employeeListTable = document.getElementById('employee-list');
+
+        function renderEmployees() {
+            const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
+            const deleteBtnText = translations[currentLanguage].btn_delete;
+            employeeListTable.innerHTML = employees.map((emp, index) => {
+                const actionCell = canDelete ? `<td><button onclick="deleteEmployee(event, ${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
+                return `<tr class="clickable-row" onclick="launchEmployeeProfileWorkspace(${index})">
+                    <td><strong>${escapeHtml(emp.name)}</strong></td>
+                    <td>${escapeHtml(emp.role)}</td>
+                    <td><code>${escapeHtml(emp.cin || 'N/A')}</code></td>
+                    <td>${escapeHtml(emp.startDate || 'N/A')}</td>
+                    <td><span style="color:var(--primary-purple); font-weight:600;">${emp.dailyWage} DT</span></td>
+                    <td>${emp.privileges.map(p => `<span class="badge ${p.toLowerCase()}">${p}</span>`).join('')}</td>
+                    ${actionCell}
+                </tr>`;
+            }).join('') || `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No staff records initialized.</td></tr>`;
+        }
+
+        employeeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('emp-name').value.trim();
+            const role = document.getElementById('emp-role').value.trim();
+            const dob = document.getElementById('emp-dob').value;
+            const cin = document.getElementById('emp-cin').value.trim();
+            const startDate = document.getElementById('emp-start-date').value;
+            const wage = parseFloat(document.getElementById('emp-wage').value) || 50;
+            const chosenPrivs = Array.from(document.querySelectorAll('input[name="privileges"]:checked')).map(cb => cb.value);
+            if (!name) { document.getElementById('name-error').style.display = 'block'; return; }
+            document.getElementById('name-error').style.display = 'none';
+            employees.push({ name, role, dob, cin, startDate, privileges: chosenPrivs, dailyWage: wage, attendance: {}, advances: [] });
+            syncLocalStorage(); renderEmployees(); employeeForm.reset();
+        });
+
+        function deleteEmployee(event, index) { event.stopPropagation(); employees.splice(index, 1); syncLocalStorage(); renderEmployees(); }
+
+        function launchEmployeeProfileWorkspace(index) {
+            selectedEmployeeIndex = index;
+            const targetEmployee = employees[index];
+            document.getElementById('modal-emp-title-name').innerText = targetEmployee.name;
+            document.getElementById('modal-emp-subtitle-role').innerText = `Role Context Assignment: ${targetEmployee.role}`;
+            document.getElementById('advance-transaction-form').reset(); document.getElementById('adv-date-input').value = "2026-07-02";
+            renderProfileCalendarMatrix(); renderAdvancesLedgerRecords(); document.getElementById('employee-profile-modal').style.display = 'flex';
+        }
+
+        function hideProfileModalDirect() { document.getElementById('employee-profile-modal').style.display = 'none'; selectedEmployeeIndex = null; }
+        function closeEmployeeProfileModal(event) { if (event.target.id === 'employee-profile-modal') hideProfileModalDirect(); }
+        function shiftSelectedMonth(direction) { calendarTargetDate.setMonth(calendarTargetDate.getMonth() + direction); renderProfileCalendarMatrix(); }
+
+        function renderProfileCalendarMatrix() {
+            const gridContainer = document.getElementById('dynamic-calendar-grid-target');
+            const headerLabel = document.getElementById('calendar-month-year-view-string');
+            const targetEmployee = employees[selectedEmployeeIndex];
+            const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const viewYear = calendarTargetDate.getFullYear(); const viewMonth = calendarTargetDate.getMonth();
+
+            headerLabel.innerText = `${monthsList[viewMonth]} ${viewYear}`; gridContainer.innerHTML = '';
+            const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+            weekdays.forEach(day => { const node = document.createElement('div'); node.className = 'calendar-weekday-lbl'; node.innerText = day; gridContainer.appendChild(node); });
+
+            const initialDayOffset = new Date(viewYear, viewMonth, 1).getDay();
+            const aggregateDaysCount = new Date(viewYear, viewMonth + 1, 0).getDate();
+            for (let i = 0; i < initialDayOffset; i++) { gridContainer.appendChild(document.createElement('div')).className = 'calendar-day-node empty-slot'; }
+
+            for (let currentDay = 1; currentDay <= aggregateDaysCount; currentDay++) {
+                const dayNode = document.createElement('div');
+                dayNode.className = 'calendar-day-node'; dayNode.innerText = currentDay;
+                const datestampKeyString = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+                const activeStateValue = targetEmployee.attendance[datestampKeyString];
+                if (activeStateValue) dayNode.classList.add(`state-${activeStateValue}`);
+
+                dayNode.onclick = () => {
+                    const brushTool = document.querySelector('input[name="active-status-tool"]:checked').value;
+                    if (targetEmployee.attendance[datestampKeyString] === brushTool) delete targetEmployee.attendance[datestampKeyString];
+                    else targetEmployee.attendance[datestampKeyString] = brushTool;
+                    syncLocalStorage(); renderProfileCalendarMatrix();
+                };
+                gridContainer.appendChild(dayNode);
+            }
+            calculateAndRenderWeeklyCalculationsEngine(targetEmployee, viewYear, viewMonth, initialDayOffset, aggregateDaysCount, 'modal-payroll-calculation-tbody');
+        }
+
+        function calculateAndRenderWeeklyCalculationsEngine(employee, year, month, offset, totalDays, tbodyTargetId) {
+            const tbody = document.getElementById(tbodyTargetId); tbody.innerHTML = '';
+            let weekBuckets = Array.from({ length: 6 }, () => ({ present: 0, holiday: 0, unjustified: 0 }));
+            let grossMonthTotal = 0;
+
+            for (let d = 1; d <= totalDays; d++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const layoutWeekRow = Math.floor((d + offset - 1) / 7);
+                const status = employee.attendance[dateKey];
+                if (status === 'present') weekBuckets[layoutWeekRow].present++;
+                else if (status === 'holiday') weekBuckets[layoutWeekRow].holiday++;
+                else if (status === 'unjustified') weekBuckets[layoutWeekRow].unjustified++;
+            }
+
+            weekBuckets.forEach((week, idx) => {
+                if (week.present > 0 || week.holiday > 0 || week.unjustified > 0 || idx < 4) {
+                    const calculatedGrossWeeklyWage = week.present * employee.dailyWage;
+                    grossMonthTotal += calculatedGrossWeeklyWage;
+                    tbody.innerHTML += `<tr><td><strong>Week ${idx + 1}</strong></td><td><span style="color:#22c55e; font-weight:700;">${week.present} Days</span></td><td><span style="color:#eab308;">${week.holiday}</span></td><td><span style="color:#ef4444;">${week.unjustified}</span></td><td><strong style="color:var(--primary-purple);">${calculatedGrossWeeklyWage} DT</strong></td></tr>`;
+                }
+            });
+
+            let activeAdvancesSum = 0;
+            if (employee.advances) { employee.advances.forEach(adv => { const advDate = new Date(adv.date); if (advDate.getFullYear() === year && advDate.getMonth() === month) activeAdvancesSum += adv.amount; }); }
+            tbody.innerHTML += `<tr style="background-color: var(--table-th-bg); border-top: 2px solid var(--border-color);"><td><strong>Summary Matrix</strong></td><td colspan="3" style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">Gross: ${grossMonthTotal} DT | Advances: -${activeAdvancesSum} DT</td><td><strong style="color: #16a34a; font-size: 0.95rem;">Net: ${grossMonthTotal - activeAdvancesSum} DT</strong></td></tr>`;
+        }
+
+        function commitAdvancePaymentRecord(event) {
+            event.preventDefault();
+            const amount = parseFloat(document.getElementById('adv-amount-input').value);
+            const date = document.getElementById('adv-date-input').value;
+            const targetEmployee = employees[selectedEmployeeIndex];
+            targetEmployee.advances.push({ amount, date }); targetEmployee.advances.sort((a, b) => new Date(b.date) - new Date(a.date));
+            syncLocalStorage(); renderAdvancesLedgerRecords(); renderProfileCalendarMatrix(); document.getElementById('advance-transaction-form').reset(); document.getElementById('adv-date-input').value = "2026-07-02";
+        }
+
+        function renderAdvancesLedgerRecords() {
+            const tbody = document.getElementById('ledger-history-tbody-target'); const totalSumDisplay = document.getElementById('ledger-total-adv-sum'); const targetEmployee = employees[selectedEmployeeIndex];
+            let accountingSum = 0;
+            tbody.innerHTML = targetEmployee.advances.map(record => { accountingSum += record.amount; return `<tr><td>${record.date}</td><td><strong>${record.amount} DT</strong></td></tr>`; }).join('') || `<tr><td colspan="2" style="text-align:center; color:var(--text-muted);">No advances issued.</td></tr>`;
+            totalSumDisplay.innerText = `${accountingSum} DT`;
+        }
+
+        function shiftSelfMonth(direction) { selfCalendarTargetDate.setMonth(selfCalendarTargetDate.getMonth() + direction); renderEmployeeSelfServiceView(); }
+
+        function renderEmployeeSelfServiceView() {
+            const systemEmployeeProfile = employees.find(e => e.name === currentUser.name && e.role === currentUser.role);
+            if (!systemEmployeeProfile) return;
+            document.getElementById('emp-self-title').innerText = `Attendance Logs: ${systemEmployeeProfile.name}`;
+            
+            const gridContainer = document.getElementById('self-calendar-grid'); const headerLabel = document.getElementById('self-calendar-month-string');
+            const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const viewYear = selfCalendarTargetDate.getFullYear(); const viewMonth = selfCalendarTargetDate.getMonth();
+            headerLabel.innerText = `${monthsList[viewMonth]} ${viewYear}`; gridContainer.innerHTML = '';
+
+            const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+            weekdays.forEach(day => { gridContainer.appendChild(document.createElement('div')).className = 'calendar-weekday-lbl'; gridContainer.lastChild.innerText = day; });
+
+            const offset = new Date(viewYear, viewMonth, 1).getDay(); const totalDays = new Date(viewYear, viewMonth + 1, 0).getDate();
+            for (let i = 0; i < offset; i++) { gridContainer.appendChild(document.createElement('div')).className = 'calendar-day-node empty-slot'; }
+            for (let d = 1; d <= totalDays; d++) {
+                const dayNode = document.createElement('div'); dayNode.className = 'calendar-day-node read-only-node'; dayNode.innerText = d;
+                const dateKey = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const status = systemEmployeeProfile.attendance[dateKey]; if (status) dayNode.classList.add(`state-${status}`);
+                gridContainer.appendChild(dayNode);
+            }
+            calculateAndRenderWeeklyCalculationsEngine(systemEmployeeProfile, viewYear, viewMonth, offset, totalDays, 'self-payroll-tbody');
+        }
+
+        const clientForm = document.getElementById('client-form'); const clientListTable = document.getElementById('client-list');
+
+        function renderClients() {
+            const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
+            const deleteBtnText = translations[currentLanguage].btn_delete;
+            clientListTable.innerHTML = clients.map((client, index) => {
+                const actionCell = canDelete ? `<td><button onclick="deleteClient(${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
+                const contactsHTML = client.contacts.map(con => `<div>${con.type === 'phone' ? '📞' : '✉️'} ${escapeHtml(con.value)}</div>`).join('');
+                const sectorVal = client.sector || 'Private'; const badgeClass = sectorVal === 'Public' ? 'public-sector' : 'private-sector';
+                return `<tr><td><strong>${escapeHtml(client.name)}</strong></td><td><span class="badge ${badgeClass}">${sectorVal}</span></td><td>${escapeHtml(client.address || 'N/A')}</td><td><code>${escapeHtml(client.matFiscale || 'N/A')}</code></td><td>${escapeHtml(client.nsdd || 'N/A')}</td><td>${contactsHTML}</td>${actionCell}</tr>`;
+            }).join('') || `<tr><td colspan="7" style="text-align: center; color: #94a3b8;">No clients compiled.</td></tr>`;
+        }
+
+        clientForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('client-name').value.trim(); const sector = document.getElementById('client-sector').value;
+            const address = document.getElementById('client-address').value.trim(); const matFiscale = document.getElementById('client-mat-fiscale').value.trim(); const nsdd = document.getElementById('client-nsdd').value.trim();
+            let contactList = []; let validationPass = true;
+            document.querySelectorAll('#client-contact-fields-wrapper .contact-row').forEach(row => {
+                const type = row.querySelector('.contact-type').value; const value = row.querySelector('.contact-value').value.trim();
+                if (type === 'phone' && !/^\+216\d{8}$/.test(value.replace(/\s+/g, ''))) validationPass = false; contactList.push({ type, value });
+            });
+            if (!validationPass) { document.getElementById('client-contact-error').style.display = 'block'; return; }
+            document.getElementById('client-contact-error').style.display = 'none';
+            clients.push({ name, sector, address, matFiscale, nsdd, contacts: contactList }); 
+            syncLocalStorage(); renderClients(); populateBordereauDropdowns(); clientForm.reset(); executeLiveTunisianFiscalCalculator();
+        });
+
+        function deleteClient(index) { clients.splice(index, 1); syncLocalStorage(); renderClients(); populateBordereauDropdowns(); }
+
+        const pricingForm = document.getElementById('pricing-form'); const pricingListTable = document.getElementById('pricing-list');
+
+        function renderWastePrices() {
+            const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
+            const deleteBtnText = translations[currentLanguage].btn_delete;
+            pricingListTable.innerHTML = wastePrices.map((waste, index) => {
+                const actionCell = canDelete ? `<td><button onclick="deleteWastePrice(${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
+                return `<tr><td><strong>${escapeHtml(waste.type)}</strong></td>${actionCell}</tr>`;
+            }).join('') || `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">No waste categories compiled.</td></tr>`;
+        }
+
+        pricingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('waste-type').value.trim();
+            if(!type) return;
+            wastePrices.push({ type });
+            syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); pricingForm.reset();
+        });
+
+        function deleteWastePrice(index) { wastePrices.splice(index, 1); syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); }
+
+        const bordereauForm = document.getElementById('bordereau-form'); const bordereauListTable = document.getElementById('bordereau-list');
+
+        function renderBordereaux() {
+            const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
+            const deleteBtnText = translations[currentLanguage].btn_delete;
+            bordereauListTable.innerHTML = bordereaux.map((b, index) => {
+                const actionCell = canDelete ? `<td><button onclick="deleteBordereau(event, ${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
+                return `<tr class="clickable-row" onclick="launchBordereauInspectorModal(${index})">
+                    <td><strong>${escapeHtml(b.client)}</strong></td><td>${escapeHtml(b.type)}</td><td>${b.quantity} ${b.unit}</td>
+                    <td>${b.rubbishBaseHT} DT</td><td>Stamp: ${b.timbreFee} DT</td><td><strong style="color:var(--primary-purple);">${b.totalTTC} DT</strong></td>
+                    <td><small>Coll: ${b.collectionDate}<br>Dest: ${b.destructionDate}</small></td>${actionCell}
+                </tr>`;
+            }).join('') || `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No tracked manifests initialized.</td></tr>`;
+        }
+
+        bordereauForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const client = document.getElementById('bordereau-client').value;
+            const type = document.getElementById('bordereau-type').value;
+            const quantity = parseFloat(document.getElementById('bordereau-qty').value);
+            const unit = document.getElementById('bordereau-unit').value;
+            const rubbishBaseHT = parseFloat(document.getElementById('bordereau-rubbish-price').value).toFixed(3);
+            const transportStatus = document.getElementById('bordereau-transp-status').value;
+            const transportBaseHT = parseFloat(document.getElementById('bordereau-transp-price').value).toFixed(3);
+            
+            const targetClientObj = clients.find(c => c.name === client);
+            const timbreFee = (targetClientObj && targetClientObj.sector === 'Private') ? "1.000" : "0.000";
+            
+            let calcTTC = (parseFloat(rubbishBaseHT) * 1.19) + parseFloat(timbreFee);
+            if (transportStatus === 'separate') { calcTTC += (parseFloat(transportBaseHT) * 1.07); }
+            const totalTTC = calcTTC.toFixed(3);
+
+            const collectionDate = document.getElementById('bordereau-coll-date').value;
+            const destructionDate = document.getElementById('bordereau-dest-date').value;
+
+            bordereaux.push({ client, type, quantity, unit, rubbishBaseHT, transportStatus, transportBaseHT, timbreFee, totalTTC, collectionDate, destructionDate });
+            syncLocalStorage(); renderBordereaux(); bordereauForm.reset(); document.getElementById('bordereau-rubbish-price').value = "2800.000";
+            document.getElementById('bordereau-transp-price').value = "0"; document.getElementById('bordereau-coll-date').value = "2026-07-02"; document.getElementById('bordereau-dest-date').value = "2026-07-09";
+            executeLiveTunisianFiscalCalculator();
+        });
+
+        function deleteBordereau(event, index) { event.stopPropagation(); bordereaux.splice(index, 1); syncLocalStorage(); renderBordereaux(); }
+
+        function launchBordereauInspectorModal(index) {
+            selectedBordereauIndex = index;
+            const b = bordereaux[index];
+            const targetClientObj = clients.find(c => c.name === b.client) || { address: "N/A", matFiscale: "N/A", nsdd: "N/A" };
+
+            document.getElementById('f-invoice-num').innerText = String(index + 101);
+            document.getElementById('f-invoice-date').innerText = b.collectionDate;
+            document.getElementById('f-client-name').innerText = b.client;
+            document.getElementById('f-client-address').innerText = targetClientObj.address;
+            document.getElementById('f-client-mf').innerText = targetClientObj.matFiscale;
+
+            const rubbishHTNum = parseFloat(b.rubbishBaseHT);
+            const tvaNum = rubbishHTNum * 0.19;
+            const timbreNum = parseFloat(b.timbreFee);
+            const totalTTCNum = parseFloat(b.totalTTC);
+
+            document.getElementById('f-invoice-items-body').innerHTML = `
+                <tr><td>Collecte & Traitement - ${escapeHtml(b.type)} (${b.quantity} ${b.unit})</td><td>${b.quantity}</td><td>${rubbishHTNum.toFixed(3)}</td><td>19%</td><td>${rubbishHTNum.toFixed(3)} DT</td></tr>
+                ${b.transportStatus === 'separate' ? `<tr><td>Transport spécialisé de déchets</td><td>1</td><td>${b.transportBaseHT}</td><td>7%</td><td>${b.transportBaseHT} DT</td></tr>` : ''}
+            `;
+
+            document.getElementById('f-total-ht').innerText = rubbishHTNum.toFixed(3);
+            document.getElementById('f-total-tva').innerText = tvaNum.toFixed(3);
+            document.getElementById('f-timbre').innerText = timbreNum.toFixed(3);
+            document.getElementById('f-total-ttc').innerText = totalTTCNum.toFixed(3);
+            document.getElementById('f-amount-words').innerText = `${totalTTCNum.toFixed(3)} Dinars Tunisiens`;
+
+            // Attestation mapping
+            document.getElementById('a-doc-date').innerText = b.destructionDate;
+            document.getElementById('a-client-header-name').innerText = b.client;
+            document.getElementById('a-client-header-address').innerText = targetClientObj.address;
+            document.getElementById('a-client-header-mf').innerText = targetClientObj.matFiscale;
+            document.getElementById('a-ref-bsdd').innerText = targetClientObj.nsdd || '00374';
+            document.getElementById('a-waste-type').innerText = b.type;
+            document.getElementById('a-client-body-name').innerText = b.client;
+            document.getElementById('a-tbl-bsdd').innerText = targetClientObj.nsdd || '00374';
+            document.getElementById('a-tbl-coll').innerText = b.collectionDate;
+            document.getElementById('a-tbl-dest').innerText = b.destructionDate;
+            document.getElementById('a-tbl-qty').innerText = `${b.quantity} ${b.unit}`;
+            document.getElementById('a-client-footer-name').innerText = b.client;
+
+            document.getElementById('bordereau-inspector-modal').style.display = 'flex';
+        }
+
+        function hideBordereauInspectorDirect() { document.getElementById('bordereau-inspector-modal').style.display = 'none'; selectedBordereauIndex = null; }
+        function closeBordereauInspectorModal(event) { if (event.target.id === 'bordereau-inspector-modal') hideBordereauInspectorDirect(); }
+
+        function executePrintStreamProtocol(targetMarkupId, documentTitle) {
+            const printContentMarkup = document.getElementById(targetMarkupId).innerHTML;
+            const printWindowObject = window.open('', '_blank', 'width=900,height=700');
+            printWindowObject.document.write(`<html><head><base href="${window.location.href}"><title>${documentTitle}</title><style>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; color: #000; background: #fff; } * { color: #000 !important; } .doc-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; } .doc-table th, .doc-table td { border: 1px solid #000000; padding: 0.6rem 0.8rem; } .doc-table th { background-color: #f1f5f9; font-weight: 600; }</style></head><body>${printContentMarkup}</body></html>`);
+            printWindowObject.document.close(); printWindowObject.focus(); setTimeout(() => { printWindowObject.print(); printWindowObject.close(); }, 350);
+        }
+
+        function escapeHtml(stringInput) {
+            if (!stringInput) return '';
+            return String(stringInput).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        window.onload = initDatabase;
+    </script>
+</body>
+</html>
