@@ -7,7 +7,7 @@ app = Flask(__name__)
 # 1. Route to serve your index.html homepage
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return render_template('index.html')
 
 @app.route('/add_client', methods=['POST'])
 def add_client():
