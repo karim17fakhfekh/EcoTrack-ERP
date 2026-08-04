@@ -4,7 +4,7 @@ EcoTrack ERP is an integrated enterprise resource planning system designed to st
 
 ---
 
-## 🎯 Primary Objective
+## Primary Objective
 
 The core goal of EcoTrack ERP is to provide a single, centralized workspace for managing corporate operations, regulatory compliance, and workforce tracking:
 
@@ -23,9 +23,9 @@ The core goal of EcoTrack ERP is to provide a single, centralized workspace for 
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🏢 Waste Tracking & Fiscal Engine
+### Waste Tracking & Fiscal Engine
 - **Client Directory:** Manages public and private sector clients with unique tax identifiers (*Matricule Fiscale*) and BSDD numbers.
 - **Dynamic Fiscal Engine:** 
   - **Rubbish Base Services:** Standard 19% TVA rate.
@@ -33,19 +33,19 @@ The core goal of EcoTrack ERP is to provide a single, centralized workspace for 
   - **Sector-Based Taxing:** Automatically applies fiscal stamps (*Timbre Fiscal*) for private sector transactions while waiving them for public institutions.
 - **Live Receipt & Attestation Generator:** Built-in modal viewer that dynamically formats and prints official invoices and certificates of destruction.
 
-### 👥 Staff & Master Payroll
+### Staff & Master Payroll
 - **Interactive Attendance Matrix:** Visual monthly calendar to record daily presence, holidays, and unjustified absences.
 - **Automated Wage Calculation:** Real-time computation of weekly gross pay based on individual daily rates.
 - **Salary Advances Ledger:** Track, deduct, and log employee advance payments against monthly earnings.
 
-### 🔐 Multi-Tier Security & Navigation
+###  Multi-Tier Security & Navigation
 - **Role-Based Access Control (RBAC):** Restricts interface tools into **Read**, **Write**, **Delete**, and **Admin** privilege tiers.
 - **Dual Login Portals:** Separate authentication flows for operational staff and HR Master Session key overrides.
 - **Light/Dark Mode & Internationalization:** Instant theme switching and full English/French language toggling.
 
 ---
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 - **Backend:** Python (Flask framework) & SQLite (`company_erp.db`) for backend database interactions and access control enforcement.
 - **Frontend:** Vanilla HTML5, CSS3 (CSS Custom Properties for dynamic theme switching), and JavaScript (ES6+).
@@ -53,9 +53,6 @@ The core goal of EcoTrack ERP is to provide a single, centralized workspace for 
 
 ---
 
-## 🚀 Quick Start Guide
+## Quick Links
 
-**Clone the Repository:**
-   ```bash
-   git clone [https://github.com/your-username/ecotrack-erp.git](https://github.com/your-username/ecotrack-erp.git)
-   cd ecotrack-erp
+*  **Live Website:** https://hospitals-waste-collection-company-database-1g4pta.fly.dev
