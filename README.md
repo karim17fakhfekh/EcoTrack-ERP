@@ -55,4 +55,4 @@ The core goal of EcoTrack ERP is to provide a single, centralized workspace for 
 
 ## Quick Links
 
-*  **Live Website:** https://hospitals-waste-collection-company-database-1g4pta.fly.dev
+*  **Live Website:** https://spiffy-pothos-7d3763.netlify.app
