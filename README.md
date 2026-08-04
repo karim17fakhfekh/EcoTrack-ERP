@@ -55,7 +55,7 @@ The core goal of EcoTrack ERP is to provide a single, centralized workspace for 
 
 ## 🚀 Quick Start Guide
 
-1. **Clone the Repository:**
+**Clone the Repository:**
    ```bash
    git clone [https://github.com/your-username/ecotrack-erp.git](https://github.com/your-username/ecotrack-erp.git)
    cd ecotrack-erp
