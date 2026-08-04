@@ -1,3 +1,10 @@
+<!--
+==============================================================================
+Copyright (c) 2026 Karim Fakhfakh. All rights reserved.
+Project: EcoTrack ERP - Waste Management & Payroll Platform
+Author: Karim Fakhfakh
+==============================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,7 +243,7 @@
         })();
     </script>
 </head>
-<body>
+<body onload="initDatabase()">
 
     <!-- Login Screen -->
     <div id="login-screen">
@@ -276,6 +283,10 @@
                 <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); text-align: center;">
                     *Master Configuration Core Key: <strong>19100576</strong>
                 </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.8rem;">
+                © 2026 Karim Fakhfakh. All rights reserved.
             </div>
         </div>
     </div>
@@ -434,11 +445,11 @@
                                 <button type="button" id="toggle-client-form-btn" class="btn btn-secondary" style="padding: 0.35rem 0.8rem; font-size: 0.82rem;" onclick="toggleClientRegistrationForm()">Fold Panel</button>
                             </div>
                             <form id="client-form">
-                                <div class="form-group"><label for="client-name" data-i18n="lbl_client_name">Client Entity Name</label><input type="text" id="client-name" class="form-control" required placeholder="e.g., Hôpital El Alia"></div>
+                                <div class="form-group"><label for="client-name" data-i18n="lbl_client_name">Client Entity Name</label><input type="text" id="client-name" class="form-control" required placeholder="e.g., [client name]"></div>
                                 <div class="form-group"><label for="client-sector" data-i18n="lbl_sector_cat">Sector Category</label><select id="client-sector" class="form-control" required><option value="Private">Private Sector (Requires Timbre Fiscal)</option><option value="Public">Public Sector (No Timbre Fiscal)</option></select></div>
-                                <div class="form-group"><label for="client-address" data-i18n="lbl_address">Physical Address</label><input type="text" id="client-address" class="form-control" required placeholder="e.g., 7016 EL ALIA"></div>
-                                <div class="form-group"><label for="client-mat-fiscale">Matricule Fiscale</label><input type="text" id="client-mat-fiscale" class="form-control" required placeholder="e.g., 648521 S"></div>
-                                <div class="form-group"><label for="client-nsdd">N° BSDD (Suivi des Déchets Dangereux)</label><input type="text" id="client-nsdd" class="form-control" required placeholder="e.g., 00374"></div>
+                                <div class="form-group"><label for="client-address" data-i18n="lbl_address">Physical Address</label><input type="text" id="client-address" class="form-control" required placeholder="e.g., [address]"></div>
+                                <div class="form-group"><label for="client-mat-fiscale">Matricule Fiscale</label><input type="text" id="client-mat-fiscale" class="form-control" required placeholder="e.g., [tax ID]"></div>
+                                <div class="form-group"><label for="client-nsdd">N° BSDD (Suivi des Déchets Dangereux)</label><input type="text" id="client-nsdd" class="form-control" required placeholder="e.g., 00000"></div>
                                 <div class="form-group"><label data-i18n="lbl_contact_matrix">Contact Validation Matrix Address</label>
                                     <div id="client-contact-fields-wrapper">
                                         <div class="contact-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -461,7 +472,7 @@
                         <section class="panel" id="pricing-registration-panel">
                             <h3 data-i18n="h_add_waste">Add Waste Metric Category</h3>
                             <form id="pricing-form">
-                                <div class="form-group"><label for="waste-type" data-i18n="lbl_waste_class">Rubbish Structural Classification</label><input type="text" id="waste-type" class="form-control" required placeholder="e.g., médicaments périmés"></div>
+                                <div class="form-group"><label for="waste-type" data-i18n="lbl_waste_class">Rubbish Structural Classification</label><input type="text" id="waste-type" class="form-control" required placeholder="e.g., expired pharmaceuticals"></div>
                                 <button type="submit" class="btn btn-primary" data-i18n="btn_append_waste">Append Waste Category</button>
                             </form>
                         </section>
@@ -653,15 +664,15 @@
                         <div class="document-paper-preview" id="print-target-receipt-markup">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #000000; padding-bottom: 0.5rem; margin-bottom: 1rem;">
                                 <div class="doc-header-text">
-                                    <strong>Société Global Environnement Guesmi</strong><br>
-                                    MF : 1882808 X/A/M/000<br>
-                                    Tél gérant : 95 836830<br>
-                                    Tél administration : 95 846830<br>
-                                    Route de Gabès km 6.5, ZI Sidi Selem – Sfax 3083<br>
-                                    <span style="white-space: nowrap;">Mail : globalenvironnement.das@gmail.com</span>
+                                    <strong>Société [company name]</strong><br>
+                                    MF : [tax ID]<br>
+                                    Tél gérant : +216 [phone number]<br>
+                                    Tél administration : +216 [phone number]<br>
+                                    [address]<br>
+                                    <span style="white-space: nowrap;">Mail : contact@domain.com</span>
                                 </div>
                                 <div style="text-align: right; font-size: 0.9rem; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                                    <img src="static/logo.jpg" alt="Company Logo" style="height: 50px; object-fit: contain;">
+                                    <img src="static/logo.png" alt="Company Logo" style="height: 50px; object-fit: contain;">
                                     <div style="white-space: nowrap;">
                                         <strong style="font-size: 1.05rem;">FACTURE N°<span id="f-invoice-num">--</span>/2026</strong><br>
                                         <span style="white-space: nowrap;">DATE: <span id="f-invoice-date">--</span></span>
@@ -694,7 +705,7 @@
                             <p class="doc-body-paragraph" style="margin-top: 1.5rem; font-style: italic; border-top: 1px dashed #000000; padding-top: 0.5rem; font-size: 0.85rem;">
                                 Arrêtée la présente facture à la somme de : <strong id="f-amount-words">--</strong>
                             </p>
-                            <div class="doc-footer-signature">Le gérant,<br>Mohamed Guesmi</div>
+                            <div class="doc-footer-signature">Le gérant,<br>[manager name]</div>
                         </div>
                     </div>
                     <button type="button" class="btn btn-success" style="margin-top: 1rem;" onclick="executePrintStreamProtocol('print-target-receipt-markup', 'Facture Log Output')" data-i18n="btn_print_invoice">Print Facture / Reçu</button>
@@ -705,17 +716,17 @@
                         <div class="document-paper-preview" id="print-target-attestation-markup" style="font-family: 'Times New Roman', Times, serif; line-height: 1.6;">
                             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000000; padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
                                 <div>
-                                    <strong style="font-size: 1.05rem;">Global Environnement Guesmi</strong><br>
+                                    <strong style="font-size: 1.05rem;">[company name]</strong><br>
                                     <small>
-                                        Tél gérant : 95 836830<br>
-                                        Tél administration : 95 846830<br>
-                                        Route de Gabès km 6.5, ZI Sidi Selem – Sfax 3083<br>
-                                        <span style="white-space: nowrap;">Mail : globalenvironnement.das@gmail.com</span>
+                                        Tél gérant : +216 [phone number]<br>
+                                        Tél administration : +216 [phone number]<br>
+                                        [address]<br>
+                                        <span style="white-space: nowrap;">Mail : contact@domain.com</span>
                                     </small>
                                 </div>
                                 <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                                    <img src="static/logo.jpg" alt="Global Environnement Logo" style="height: 50px; object-fit: contain;">
-                                    <div class="doc-meta-right" style="margin-bottom:0; white-space: nowrap;">Sfax, le <span id="a-doc-date">--</span></div>
+                                    <img src="static/logo.png" alt="Company Logo" style="height: 50px; object-fit: contain;">
+                                    <div class="doc-meta-right" style="margin-bottom:0; white-space: nowrap;">Date: <span id="a-doc-date">--</span></div>
                                 </div>
                             </div>
 
@@ -729,7 +740,7 @@
                             <div style="font-weight: bold; margin-bottom: 1rem; font-size: 1rem;">Ref_BSDD N°<span id="a-ref-bsdd">--</span></div>
 
                             <p class="doc-body-paragraph">
-                                Nous, la société <strong>Global Environnement Guesmi</strong> autorisée par le Ministère de l’Environnement pour l’activité de collecte, transport et traitement des Déchets d’Activité de Soin à Risque Infectieux et pharmaceutiques Autorisation N° 15-2024 ; ayant son siège social à la Zone industrielle Sidi Selem –Route de Gabès km 6,5 –Thyna 3083 - Sfax Sud ; Immatriculée au Registre National des entreprises sous le Numéro 1882808 X ; représenté par son gérant Monsieur Mohamed Guesmi ;
+                                Nous, la société <strong>[company name]</strong> autorisée par le Ministère de l’Environnement pour l’activité de collecte, transport et traitement des Déchets d’Activité de Soin à Risque Infectieux et pharmaceutiques Autorisation N° 15-2024 ; ayant son siège social à [address] ; Immatriculée au Registre National des entreprises sous le Numéro [tax ID] ; représenté par son gérant Monsieur [manager name] ;
                             </p>
                             <p class="doc-body-paragraph">
                                 Atteste par la présente que notre société a procédé à la destruction de <span id="a-waste-type" style="font-weight: bold;">--</span> à la propriété du client: <strong id="a-client-body-name">--</strong> et ce conformément aux détails mentionnés dans le tableau ci-dessous :
@@ -765,6 +776,11 @@
 
     <!-- Application Script Engine -->
     <script>
+        /*
+         * Copyright (c) 2026 Karim Fakhfakh. All rights reserved.
+         * Project: EcoTrack ERP Engine
+         * Author: Karim Fakhfakh
+         */
         const PROTOCOL_HR_KEY = "19100576";
         let employees = [];
         let clients = [];
@@ -1015,6 +1031,11 @@
             }
         };
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'en' ? 'fr' : 'en';
             localStorage.setItem('company_lang', currentLanguage);
@@ -1038,15 +1059,14 @@
         function initDatabase() {
             employees = JSON.parse(localStorage.getItem('company_directory')) || [{ name: "Karim Fakhfakh", role: "Stagiere", cin: "14253647", startDate: "2026-06-01", dob: "2007-08-29", privileges: ["Admin"], dailyWage: 80, attendance: {}, advances: [] }];
             clients = JSON.parse(localStorage.getItem('company_clients')) || [
-                { name: "Hôpital El Alia", sector: "Public", address: "7016 EL ALIA", matFiscale: "648521 S", nsdd: "00374", contacts: [{ type: "email", value: "contact@elalia.gov.tn" }] },
-                { name: "Pharmacie FAYCAL SASSI", sector: "Private", address: "10, Avenue Beit El Hekma Mansoura, 3100 Kairouan", matFiscale: "0142970 G/P/C/000", nsdd: "000042", contacts: [{ type: "email", value: "contact@pharmaciesassi.tn" }] }
+                { name: "[Client A]", sector: "Public", address: "[Address A]", matFiscale: "000000 X", nsdd: "00100", contacts: [{ type: "email", value: "contact@clienta.com" }] },
+                { name: "[Client B]", sector: "Private", address: "[Address B]", matFiscale: "111111 Y", nsdd: "00200", contacts: [{ type: "email", value: "contact@clientb.com" }] }
             ];
             wastePrices = JSON.parse(localStorage.getItem('company_waste_prices')) || [
-                { type: "médicaments périmés" }, { type: "produits pharmaceutiques périmés" }, { type: "Plastic (PET)" }, { type: "Electronic Waste" }
+                { type: "Expired Pharmaceuticals" }, { type: "Medical Plastics" }, { type: "Electronic Waste" }
             ];
             bordereaux = JSON.parse(localStorage.getItem('company_bordereaux')) || [
-                { client: "Hôpital El Alia", type: "médicaments périmés", quantity: 900, unit: "Kg", rubbishBaseHT: "2800.000", transportStatus: "included", transportBaseHT: "0.000", timbreFee: "0.000", totalTTC: "3332.000", collectionDate: "2026-06-15", destructionDate: "2026-06-17" },
-                { client: "Pharmacie FAYCAL SASSI", type: "produits pharmaceutiques périmés", quantity: 1, unit: "Boxes", rubbishBaseHT: "2800.000", transportStatus: "included", transportBaseHT: "0.000", timbreFee: "1.000", totalTTC: "3333.000", collectionDate: "2025-01-07", destructionDate: "2025-01-07" }
+                { client: "[Client A]", type: "Expired Pharmaceuticals", quantity: 900, unit: "Kg", rubbishBaseHT: "2800.000", transportStatus: "included", transportBaseHT: "0.000", timbreFee: "0.000", totalTTC: "3332.000", collectionDate: "2026-06-15", destructionDate: "2026-06-17" }
             ];
             
             employees.forEach(emp => {
@@ -1446,18 +1466,19 @@
         function renderWastePrices() {
             const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
             const deleteBtnText = translations[currentLanguage].btn_delete;
-            pricingListTable.innerHTML = wastePrices.map((waste, index) => {
+            pricingListTable.innerHTML = wastePrices.map((item, index) => {
                 const actionCell = canDelete ? `<td><button onclick="deleteWastePrice(${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
-                return `<tr><td><strong>${escapeHtml(waste.type)}</strong></td>${actionCell}</tr>`;
-            }).join('') || `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">No waste categories compiled.</td></tr>`;
+                return `<tr><td><strong>${escapeHtml(item.type)}</strong></td>${actionCell}</tr>`;
+            }).join('') || `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">No waste categories initialized.</td></tr>`;
         }
 
         pricingForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const type = document.getElementById('waste-type').value.trim();
-            if(!type) return;
-            wastePrices.push({ type });
-            syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); pricingForm.reset();
+            if (type) {
+                wastePrices.push({ type });
+                syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); pricingForm.reset();
+            }
         });
 
         function deleteWastePrice(index) { wastePrices.splice(index, 1); syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); }
@@ -1469,82 +1490,106 @@
             const deleteBtnText = translations[currentLanguage].btn_delete;
             bordereauListTable.innerHTML = bordereaux.map((b, index) => {
                 const actionCell = canDelete ? `<td><button onclick="deleteBordereau(event, ${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
-                return `<tr class="clickable-row" onclick="launchBordereauInspectorModal(${index})">
-                    <td><strong>${escapeHtml(b.client)}</strong></td><td>${escapeHtml(b.type)}</td><td>${b.quantity} ${b.unit}</td>
-                    <td>${b.rubbishBaseHT} DT</td><td>Stamp: ${b.timbreFee} DT</td><td><strong style="color:var(--primary-purple);">${b.totalTTC} DT</strong></td>
-                    <td><small>Coll: ${b.collectionDate}<br>Dest: ${b.destructionDate}</small></td>${actionCell}
+                return `<tr class="clickable-row" onclick="launchBordereauInspectorWorkspace(${index})">
+                    <td><strong>${escapeHtml(b.client)}</strong></td>
+                    <td>${escapeHtml(b.type)}</td>
+                    <td>${b.quantity} ${escapeHtml(b.unit)}</td>
+                    <td>${b.rubbishBaseHT} DT</td>
+                    <td>Timbre: ${b.timbreFee} DT</td>
+                    <td><strong style="color:var(--primary-purple);">${b.totalTTC} DT</strong></td>
+                    <td>${escapeHtml(b.collectionDate)} / ${escapeHtml(b.destructionDate)}</td>
+                    ${actionCell}
                 </tr>`;
-            }).join('') || `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No tracked manifests initialized.</td></tr>`;
+            }).join('') || `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No manifest logs configured.</td></tr>`;
         }
 
         bordereauForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const client = document.getElementById('bordereau-client').value;
             const type = document.getElementById('bordereau-type').value;
-            const quantity = parseFloat(document.getElementById('bordereau-qty').value);
+            const quantity = parseFloat(document.getElementById('bordereau-qty').value) || 0;
             const unit = document.getElementById('bordereau-unit').value;
-            const rubbishBaseHT = parseFloat(document.getElementById('bordereau-rubbish-price').value).toFixed(3);
+            const rubbishBaseHT = parseFloat(document.getElementById('bordereau-rubbish-price').value) || 0;
             const transportStatus = document.getElementById('bordereau-transp-status').value;
-            const transportBaseHT = parseFloat(document.getElementById('bordereau-transp-price').value).toFixed(3);
-            
-            const targetClientObj = clients.find(c => c.name === client);
-            const timbreFee = (targetClientObj && targetClientObj.sector === 'Private') ? "1.000" : "0.000";
-            
-            let calcTTC = (parseFloat(rubbishBaseHT) * 1.19) + parseFloat(timbreFee);
-            if (transportStatus === 'separate') { calcTTC += (parseFloat(transportBaseHT) * 1.07); }
-            const totalTTC = calcTTC.toFixed(3);
-
+            const transportBaseHT = parseFloat(document.getElementById('bordereau-transp-price').value) || 0;
             const collectionDate = document.getElementById('bordereau-coll-date').value;
             const destructionDate = document.getElementById('bordereau-dest-date').value;
 
-            bordereaux.push({ client, type, quantity, unit, rubbishBaseHT, transportStatus, transportBaseHT, timbreFee, totalTTC, collectionDate, destructionDate });
-            syncLocalStorage(); renderBordereaux(); bordereauForm.reset(); document.getElementById('bordereau-rubbish-price').value = "2800.000";
-            document.getElementById('bordereau-transp-price').value = "0"; document.getElementById('bordereau-coll-date').value = "2026-07-02"; document.getElementById('bordereau-dest-date').value = "2026-07-09";
+            const targetClientObj = clients.find(c => c.name === client);
+            const isPrivateClient = (targetClientObj && targetClientObj.sector === 'Private');
+            const timbreFee = isPrivateClient ? 1.000 : 0.000;
+
+            const rubbishTVA = rubbishBaseHT * 0.19;
+            let transportTVA = 0;
+            let totalTTC = rubbishBaseHT + rubbishTVA + timbreFee;
+
+            if (transportStatus === 'separate') { transportTVA = transportBaseHT * 0.07; totalTTC += (transportBaseHT + transportTVA); }
+
+            bordereaux.push({
+                client, type, quantity, unit,
+                rubbishBaseHT: rubbishBaseHT.toFixed(3),
+                transportStatus,
+                transportBaseHT: transportBaseHT.toFixed(3),
+                timbreFee: timbreFee.toFixed(3),
+                totalTTC: totalTTC.toFixed(3),
+                collectionDate, destructionDate
+            });
+
+            syncLocalStorage(); renderBordereaux(); bordereauForm.reset();
+            document.getElementById('bordereau-coll-date').value = "2026-07-02";
+            document.getElementById('bordereau-dest-date').value = "2026-07-09";
             executeLiveTunisianFiscalCalculator();
         });
 
         function deleteBordereau(event, index) { event.stopPropagation(); bordereaux.splice(index, 1); syncLocalStorage(); renderBordereaux(); }
 
-        function launchBordereauInspectorModal(index) {
+        function launchBordereauInspectorWorkspace(index) {
             selectedBordereauIndex = index;
-            const b = bordereaux[index];
-            const targetClientObj = clients.find(c => c.name === b.client) || { address: "N/A", matFiscale: "N/A", nsdd: "N/A" };
+            const targetBordereau = bordereaux[index];
+            const clientObj = clients.find(c => c.name === targetBordereau.client) || { name: targetBordereau.client, address: 'N/A', matFiscale: 'N/A', nsdd: 'N/A' };
 
-            document.getElementById('f-invoice-num').innerText = String(index + 101);
-            document.getElementById('f-invoice-date').innerText = b.collectionDate;
-            document.getElementById('f-client-name').innerText = b.client;
-            document.getElementById('f-client-address').innerText = targetClientObj.address;
-            document.getElementById('f-client-mf').innerText = targetClientObj.matFiscale;
+            // Facture mapping
+            document.getElementById('f-invoice-num').innerText = String(index + 1).padStart(3, '0');
+            document.getElementById('f-invoice-date').innerText = targetBordereau.collectionDate;
+            document.getElementById('f-client-name').innerText = clientObj.name;
+            document.getElementById('f-client-address').innerText = clientObj.address;
+            document.getElementById('f-client-mf').innerText = clientObj.matFiscale;
 
-            const rubbishHTNum = parseFloat(b.rubbishBaseHT);
-            const tvaNum = rubbishHTNum * 0.19;
-            const timbreNum = parseFloat(b.timbreFee);
-            const totalTTCNum = parseFloat(b.totalTTC);
+            const rubbishBase = parseFloat(targetBordereau.rubbishBaseHT);
+            const rubbishTVA = rubbishBase * 0.19;
+            let itemsHTML = `<tr><td>Enlèvement et traitement de ${escapeHtml(targetBordereau.type)}</td><td>${targetBordereau.quantity} ${escapeHtml(targetBordereau.unit)}</td><td>${rubbishBase.toFixed(3)}</td><td>19%</td><td>${rubbishBase.toFixed(3)}</td></tr>`;
+            
+            let totalHT = rubbishBase;
+            let totalTVA = rubbishTVA;
 
-            document.getElementById('f-invoice-items-body').innerHTML = `
-                <tr><td>Collecte & Traitement - ${escapeHtml(b.type)} (${b.quantity} ${b.unit})</td><td>${b.quantity}</td><td>${rubbishHTNum.toFixed(3)}</td><td>19%</td><td>${rubbishHTNum.toFixed(3)} DT</td></tr>
-                ${b.transportStatus === 'separate' ? `<tr><td>Transport spécialisé de déchets</td><td>1</td><td>${b.transportBaseHT}</td><td>7%</td><td>${b.transportBaseHT} DT</td></tr>` : ''}
-            `;
+            if (targetBordereau.transportStatus === 'separate') {
+                const transpBase = parseFloat(targetBordereau.transportBaseHT);
+                const transpTVA = transpBase * 0.07;
+                itemsHTML += `<tr><td>Frais de Transport</td><td>1 Service</td><td>${transpBase.toFixed(3)}</td><td>7%</td><td>${transpBase.toFixed(3)}</td></tr>`;
+                totalHT += transpBase;
+                totalTVA += transpTVA;
+            }
 
-            document.getElementById('f-total-ht').innerText = rubbishHTNum.toFixed(3);
-            document.getElementById('f-total-tva').innerText = tvaNum.toFixed(3);
-            document.getElementById('f-timbre').innerText = timbreNum.toFixed(3);
-            document.getElementById('f-total-ttc').innerText = totalTTCNum.toFixed(3);
-            document.getElementById('f-amount-words').innerText = `${totalTTCNum.toFixed(3)} Dinars Tunisiens`;
+            document.getElementById('f-invoice-items-body').innerHTML = itemsHTML;
+            document.getElementById('f-total-ht').innerText = totalHT.toFixed(3);
+            document.getElementById('f-total-tva').innerText = totalTVA.toFixed(3);
+            document.getElementById('f-timbre').innerText = targetBordereau.timbreFee;
+            document.getElementById('f-total-ttc').innerText = targetBordereau.totalTTC;
+            document.getElementById('f-amount-words').innerText = `${targetBordereau.totalTTC} Dinars Tunisiens`;
 
             // Attestation mapping
-            document.getElementById('a-doc-date').innerText = b.destructionDate;
-            document.getElementById('a-client-header-name').innerText = b.client;
-            document.getElementById('a-client-header-address').innerText = targetClientObj.address;
-            document.getElementById('a-client-header-mf').innerText = targetClientObj.matFiscale;
-            document.getElementById('a-ref-bsdd').innerText = targetClientObj.nsdd || '00374';
-            document.getElementById('a-waste-type').innerText = b.type;
-            document.getElementById('a-client-body-name').innerText = b.client;
-            document.getElementById('a-tbl-bsdd').innerText = targetClientObj.nsdd || '00374';
-            document.getElementById('a-tbl-coll').innerText = b.collectionDate;
-            document.getElementById('a-tbl-dest').innerText = b.destructionDate;
-            document.getElementById('a-tbl-qty').innerText = `${b.quantity} ${b.unit}`;
-            document.getElementById('a-client-footer-name').innerText = b.client;
+            document.getElementById('a-doc-date').innerText = targetBordereau.destructionDate;
+            document.getElementById('a-client-header-name').innerText = clientObj.name;
+            document.getElementById('a-client-header-address').innerText = clientObj.address;
+            document.getElementById('a-client-header-mf').innerText = clientObj.matFiscale;
+            document.getElementById('a-ref-bsdd').innerText = clientObj.nsdd;
+            document.getElementById('a-waste-type').innerText = targetBordereau.type;
+            document.getElementById('a-client-body-name').innerText = clientObj.name;
+            document.getElementById('a-tbl-bsdd').innerText = clientObj.nsdd;
+            document.getElementById('a-tbl-coll').innerText = targetBordereau.collectionDate;
+            document.getElementById('a-tbl-dest').innerText = targetBordereau.destructionDate;
+            document.getElementById('a-tbl-qty').innerText = `${targetBordereau.quantity} ${targetBordereau.unit}`;
+            document.getElementById('a-client-footer-name').innerText = clientObj.name;
 
             document.getElementById('bordereau-inspector-modal').style.display = 'flex';
         }
@@ -1552,19 +1597,22 @@
         function hideBordereauInspectorDirect() { document.getElementById('bordereau-inspector-modal').style.display = 'none'; selectedBordereauIndex = null; }
         function closeBordereauInspectorModal(event) { if (event.target.id === 'bordereau-inspector-modal') hideBordereauInspectorDirect(); }
 
-        function executePrintStreamProtocol(targetMarkupId, documentTitle) {
-            const printContentMarkup = document.getElementById(targetMarkupId).innerHTML;
-            const printWindowObject = window.open('', '_blank', 'width=900,height=700');
-            printWindowObject.document.write(`<html><head><base href="${window.location.href}"><title>${documentTitle}</title><style>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; color: #000; background: #fff; } * { color: #000 !important; } .doc-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; } .doc-table th, .doc-table td { border: 1px solid #000000; padding: 0.6rem 0.8rem; } .doc-table th { background-color: #f1f5f9; font-weight: 600; }</style></head><body>${printContentMarkup}</body></html>`);
-            printWindowObject.document.close(); printWindowObject.focus(); setTimeout(() => { printWindowObject.print(); printWindowObject.close(); }, 350);
+        function executePrintStreamProtocol(targetElemId, docTitle) {
+            const printContent = document.getElementById(targetElemId).outerHTML;
+            const win = window.open('', '', 'height=700,width=900');
+            win.document.write(`<html><head><title>${docTitle}</title><style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+                th { background-color: #f1f5f9; }
+                .doc-title-centered { text-align: center; font-size: 1.4rem; font-weight: bold; margin: 20px 0; border-bottom: 2px solid #000; padding-bottom: 5px; }
+            </style></head><body>`);
+            win.document.write(printContent);
+            win.document.write('</body></html>');
+            win.document.close();
+            win.focus();
+            setTimeout(() => { win.print(); win.close(); }, 300);
         }
-
-        function escapeHtml(stringInput) {
-            if (!stringInput) return '';
-            return String(stringInput).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        }
-
-        window.onload = initDatabase;
     </script>
 </body>
 </html>
