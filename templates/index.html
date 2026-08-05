@@ -1469,16 +1469,13 @@ Author: Karim Fakhfakh
             pricingListTable.innerHTML = wastePrices.map((item, index) => {
                 const actionCell = canDelete ? `<td><button onclick="deleteWastePrice(${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
                 return `<tr><td><strong>${escapeHtml(item.type)}</strong></td>${actionCell}</tr>`;
-            }).join('') || `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">No waste categories initialized.</td></tr>`;
+            }).join('') || `<tr><td colspan="2" style="text-align: center; color: #94a3b8;">No rubbish categories registered.</td></tr>`;
         }
 
         pricingForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const type = document.getElementById('waste-type').value.trim();
-            if (type) {
-                wastePrices.push({ type });
-                syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); pricingForm.reset();
-            }
+            wastePrices.push({ type }); syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); pricingForm.reset();
         });
 
         function deleteWastePrice(index) { wastePrices.splice(index, 1); syncLocalStorage(); renderWastePrices(); populateBordereauDropdowns(); }
@@ -1488,19 +1485,20 @@ Author: Karim Fakhfakh
         function renderBordereaux() {
             const canDelete = currentUser.privileges.includes('Admin') || currentUser.privileges.includes('Delete');
             const deleteBtnText = translations[currentLanguage].btn_delete;
-            bordereauListTable.innerHTML = bordereaux.map((b, index) => {
-                const actionCell = canDelete ? `<td><button onclick="deleteBordereau(event, ${index})" class="btn btn-danger">${deleteBtnText}</button></td>` : '';
-                return `<tr class="clickable-row" onclick="launchBordereauInspectorWorkspace(${index})">
-                    <td><strong>${escapeHtml(b.client)}</strong></td>
-                    <td>${escapeHtml(b.type)}</td>
-                    <td>${b.quantity} ${escapeHtml(b.unit)}</td>
-                    <td>${b.rubbishBaseHT} DT</td>
-                    <td>Timbre: ${b.timbreFee} DT</td>
-                    <td><strong style="color:var(--primary-purple);">${b.totalTTC} DT</strong></td>
-                    <td>${escapeHtml(b.collectionDate)} / ${escapeHtml(b.destructionDate)}</td>
-                    ${actionCell}
+            bordereauListTable.innerHTML = bordereaux.map((item, index) => {
+                const actionCell = canDelete ? `<button onclick="deleteBordereau(event, ${index})" class="btn btn-danger">${deleteBtnText}</button>` : '';
+                const transportSummaryText = item.transportStatus === 'separate' ? `<br><small style="color:var(--text-muted);">Transport (HT): ${item.transportBaseHT} DT</small>` : '';
+                return `<tr class="clickable-row" onclick="launchBordereauDocumentWorkspace(${index})">
+                    <td><strong>${escapeHtml(item.client)}</strong></td>
+                    <td>${escapeHtml(item.type)}</td>
+                    <td><span class="badge read">${item.quantity} ${item.unit || 'Kg'}</span></td>
+                    <td>${item.rubbishBaseHT} DT ${transportSummaryText}</td>
+                    <td><small>Timbre: ${item.timbreFee} DT</small></td>
+                    <td><strong style="color:var(--primary-purple);">${item.totalTTC} DT</strong></td>
+                    <td><small>${item.collectionDate}<br>➔ ${item.destructionDate}</small></td>
+                    <td><div style="display:flex; gap:0.3rem;">${actionCell}</div></td>
                 </tr>`;
-            }).join('') || `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No manifest logs configured.</td></tr>`;
+            }).join('') || `<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No bordereau tracking records logged.</td></tr>`;
         }
 
         bordereauForm.addEventListener('submit', function(e) {
@@ -1512,8 +1510,6 @@ Author: Karim Fakhfakh
             const rubbishBaseHT = parseFloat(document.getElementById('bordereau-rubbish-price').value) || 0;
             const transportStatus = document.getElementById('bordereau-transp-status').value;
             const transportBaseHT = parseFloat(document.getElementById('bordereau-transp-price').value) || 0;
-            const collectionDate = document.getElementById('bordereau-coll-date').value;
-            const destructionDate = document.getElementById('bordereau-dest-date').value;
 
             const targetClientObj = clients.find(c => c.name === client);
             const isPrivateClient = (targetClientObj && targetClientObj.sector === 'Private');
@@ -1521,9 +1517,15 @@ Author: Karim Fakhfakh
 
             const rubbishTVA = rubbishBaseHT * 0.19;
             let transportTVA = 0;
-            let totalTTC = rubbishBaseHT + rubbishTVA + timbreFee;
+            let calculatedTotalTTC = rubbishBaseHT + rubbishTVA + timbreFee;
 
-            if (transportStatus === 'separate') { transportTVA = transportBaseHT * 0.07; totalTTC += (transportBaseHT + transportTVA); }
+            if (transportStatus === 'separate') {
+                transportTVA = transportBaseHT * 0.07;
+                calculatedTotalTTC += (transportBaseHT + transportTVA);
+            }
+
+            const collectionDate = document.getElementById('bordereau-coll-date').value;
+            const destructionDate = document.getElementById('bordereau-dest-date').value;
 
             bordereaux.push({
                 client, type, quantity, unit,
@@ -1531,7 +1533,7 @@ Author: Karim Fakhfakh
                 transportStatus,
                 transportBaseHT: transportBaseHT.toFixed(3),
                 timbreFee: timbreFee.toFixed(3),
-                totalTTC: totalTTC.toFixed(3),
+                totalTTC: calculatedTotalTTC.toFixed(3),
                 collectionDate, destructionDate
             });
 
@@ -1543,75 +1545,114 @@ Author: Karim Fakhfakh
 
         function deleteBordereau(event, index) { event.stopPropagation(); bordereaux.splice(index, 1); syncLocalStorage(); renderBordereaux(); }
 
-        function launchBordereauInspectorWorkspace(index) {
+        function launchBordereauDocumentWorkspace(index) {
             selectedBordereauIndex = index;
             const targetBordereau = bordereaux[index];
-            const clientObj = clients.find(c => c.name === targetBordereau.client) || { name: targetBordereau.client, address: 'N/A', matFiscale: 'N/A', nsdd: 'N/A' };
+            const matchedClient = clients.find(c => c.name === targetBordereau.client) || { name: targetBordereau.client, address: "N/A", matFiscale: "N/A", nsdd: "N/A" };
 
-            // Facture mapping
-            document.getElementById('f-invoice-num').innerText = String(index + 1).padStart(3, '0');
+            // Facture Document Dynamic Injection
+            document.getElementById('f-invoice-num').innerText = String(index + 1).padStart(4, '0');
             document.getElementById('f-invoice-date').innerText = targetBordereau.collectionDate;
-            document.getElementById('f-client-name').innerText = clientObj.name;
-            document.getElementById('f-client-address').innerText = clientObj.address;
-            document.getElementById('f-client-mf').innerText = clientObj.matFiscale;
+            document.getElementById('f-client-name').innerText = matchedClient.name;
+            document.getElementById('f-client-address').innerText = matchedClient.address || "N/A";
+            document.getElementById('f-client-mf').innerText = matchedClient.matFiscale || "N/A";
 
             const rubbishBase = parseFloat(targetBordereau.rubbishBaseHT);
             const rubbishTVA = rubbishBase * 0.19;
-            let itemsHTML = `<tr><td>Enlèvement et traitement de ${escapeHtml(targetBordereau.type)}</td><td>${targetBordereau.quantity} ${escapeHtml(targetBordereau.unit)}</td><td>${rubbishBase.toFixed(3)}</td><td>19%</td><td>${rubbishBase.toFixed(3)}</td></tr>`;
-            
-            let totalHT = rubbishBase;
-            let totalTVA = rubbishTVA;
+            let combinedHT = rubbishBase;
+            let combinedTVA = rubbishTVA;
+
+            let invoiceItemsHTML = `<tr>
+                <td>Prestation de destruction: ${escapeHtml(targetBordereau.type)}</td>
+                <td>${targetBordereau.quantity} ${targetBordereau.unit || 'Kg'}</td>
+                <td>${rubbishBase.toFixed(3)} DT</td>
+                <td>19%</td>
+                <td>${rubbishBase.toFixed(3)} DT</td>
+            </tr>`;
 
             if (targetBordereau.transportStatus === 'separate') {
                 const transpBase = parseFloat(targetBordereau.transportBaseHT);
                 const transpTVA = transpBase * 0.07;
-                itemsHTML += `<tr><td>Frais de Transport</td><td>1 Service</td><td>${transpBase.toFixed(3)}</td><td>7%</td><td>${transpBase.toFixed(3)}</td></tr>`;
-                totalHT += transpBase;
-                totalTVA += transpTVA;
+                combinedHT += transpBase;
+                combinedTVA += transpTVA;
+
+                invoiceItemsHTML += `<tr>
+                    <td>Frais de Transport et Logistique</td>
+                    <td>1 Forfait</td>
+                    <td>${transpBase.toFixed(3)} DT</td>
+                    <td>7%</td>
+                    <td>${transpBase.toFixed(3)} DT</td>
+                </tr>`;
             }
 
-            document.getElementById('f-invoice-items-body').innerHTML = itemsHTML;
-            document.getElementById('f-total-ht').innerText = totalHT.toFixed(3);
-            document.getElementById('f-total-tva').innerText = totalTVA.toFixed(3);
-            document.getElementById('f-timbre').innerText = targetBordereau.timbreFee;
+            document.getElementById('f-invoice-items-body').innerHTML = invoiceItemsHTML;
+            document.getElementById('f-total-ht').innerText = combinedHT.toFixed(3);
+            document.getElementById('f-total-tva').innerText = combinedTVA.toFixed(3);
+            document.getElementById('f-timbre').innerText = parseFloat(targetBordereau.timbreFee).toFixed(3);
             document.getElementById('f-total-ttc').innerText = targetBordereau.totalTTC;
-            document.getElementById('f-amount-words').innerText = `${targetBordereau.totalTTC} Dinars Tunisiens`;
+            document.getElementById('f-amount-words').innerText = `${targetBordereau.totalTTC} Dinars Tunisien`;
 
-            // Attestation mapping
+            // Attestation Document Dynamic Injection
             document.getElementById('a-doc-date').innerText = targetBordereau.destructionDate;
-            document.getElementById('a-client-header-name').innerText = clientObj.name;
-            document.getElementById('a-client-header-address').innerText = clientObj.address;
-            document.getElementById('a-client-header-mf').innerText = clientObj.matFiscale;
-            document.getElementById('a-ref-bsdd').innerText = clientObj.nsdd;
+            document.getElementById('a-client-header-name').innerText = matchedClient.name;
+            document.getElementById('a-client-header-address').innerText = matchedClient.address || "N/A";
+            document.getElementById('a-client-header-mf').innerText = matchedClient.matFiscale || "N/A";
+            document.getElementById('a-ref-bsdd').innerText = matchedClient.nsdd || "00000";
             document.getElementById('a-waste-type').innerText = targetBordereau.type;
-            document.getElementById('a-client-body-name').innerText = clientObj.name;
-            document.getElementById('a-tbl-bsdd').innerText = clientObj.nsdd;
+            document.getElementById('a-client-body-name').innerText = matchedClient.name;
+            document.getElementById('a-client-footer-name').innerText = matchedClient.name;
+            document.getElementById('a-tbl-bsdd').innerText = matchedClient.nsdd || "00000";
             document.getElementById('a-tbl-coll').innerText = targetBordereau.collectionDate;
             document.getElementById('a-tbl-dest').innerText = targetBordereau.destructionDate;
-            document.getElementById('a-tbl-qty').innerText = `${targetBordereau.quantity} ${targetBordereau.unit}`;
-            document.getElementById('a-client-footer-name').innerText = clientObj.name;
+            document.getElementById('a-tbl-qty').innerText = `${targetBordereau.quantity} ${targetBordereau.unit || 'Kg'}`;
 
             document.getElementById('bordereau-inspector-modal').style.display = 'flex';
         }
 
-        function hideBordereauInspectorDirect() { document.getElementById('bordereau-inspector-modal').style.display = 'none'; selectedBordereauIndex = null; }
-        function closeBordereauInspectorModal(event) { if (event.target.id === 'bordereau-inspector-modal') hideBordereauInspectorDirect(); }
+        function hideBordereauInspectorDirect() {
+            document.getElementById('bordereau-inspector-modal').style.display = 'none';
+            selectedBordereauIndex = null;
+        }
 
-        function executePrintStreamProtocol(targetElemId, docTitle) {
-            const printContent = document.getElementById(targetElemId).outerHTML;
-            const win = window.open('', '', 'height=700,width=900');
-            win.document.write(`<html><head><title>${docTitle}</title><style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000; }
-                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                th { background-color: #f1f5f9; }
-                .doc-title-centered { text-align: center; font-size: 1.4rem; font-weight: bold; margin: 20px 0; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            </style></head><body>`);
-            win.document.write(printContent);
-            win.document.write('</body></html>');
-            win.document.close();
-            win.focus();
-            setTimeout(() => { win.print(); win.close(); }, 300);
+        function closeBordereauInspectorModal(event) {
+            if (event.target.id === 'bordereau-inspector-modal') hideBordereauInspectorDirect();
+        }
+
+        function executePrintStreamProtocol(elementId, printTitle) {
+            const contentToPrint = document.getElementById(elementId).outerHTML;
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${printTitle}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000000; background: #ffffff; }
+                        * { color: #000000 !important; box-shadow: none !important; }
+                        .document-paper-preview { border: none !important; padding: 0 !important; box-shadow: none !important; }
+                        .doc-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+                        .doc-table th, .doc-table td { border: 1px solid #000000; padding: 0.6rem 0.8rem; }
+                        .doc-title-centered { text-align: center; font-size: 1.4rem; font-weight: bold; margin: 1.5rem 0; text-transform: uppercase; border-bottom: 2px solid #000000; padding-bottom: 0.4rem; }
+                        .doc-body-paragraph { font-size: 0.95rem; text-align: justify; margin-bottom: 1.2rem; line-height: 1.7; }
+                        .doc-footer-signature { text-align: right; margin-top: 2rem; font-weight: bold; font-size: 0.95rem; }
+                        @media print {
+                            body { padding: 0; }
+                            @page { margin: 1.5cm; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${contentToPrint}
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            window.close();
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
     </script>
 </body>
