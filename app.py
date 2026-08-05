@@ -1,50 +1,135 @@
-from flask import Flask, request, render_template, send_from_directory
+import os
 import sqlite3
+from functools import wraps
+from flask import (
+    Flask, render_template, request, redirect, 
+    url_for, session, flash, jsonify
+)
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
-# 1. Route to serve your index.html homepage
+# Security: Best practice to read secret keys from environment variables
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+DATABASE = os.environ.get('DATABASE_PATH', 'company_erp.db')
+HR_MASTER_KEY_HASH = generate_password_hash(os.environ.get('HR_MASTER_KEY', '19100576'))
+
+# --- Database Helper ---
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    with get_db_connection() as conn:
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS clients (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                sector TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
+
+# --- Decorators for Role-Based Access Control (RBAC) ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("Please log in to access this page.", "warning")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def roles_required(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_role' not in session or session['user_role'] not in roles:
+                flash("Unauthorized access: You do not have permission for this action.", "danger")
+                return render_template('access_denied.html'), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+# --- Authentication Routes ---
 @app.route('/')
 def index():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
     return render_template('index.html')
 
-@app.route('/add_client', methods=['POST'])
-def add_client():
-    # 1. Extract form text along with the security role selection
-    user_role = request.form.get('user_role')
-    name = request.form.get('client_name')
-    email = request.form.get('client_email')
-    
-    # 2. SECURITY GATE: Only allow 'HR' or 'Manager'
-    allowed_roles = ['HR', 'Manager']
-    if user_role not in allowed_roles:
-        return f"""
-        <div style="font-family: Arial, sans-serif; margin: 80px auto; max-width: 500px; text-align: center; padding: 30px; border: 2px solid #e74c3c; border-radius: 8px; background-color: #fdf2f2;">
-            <h1 style="color: #c0392b; margin-top: 0;">🚫 Access Denied</h1>
-            <p style="color: #7f8c8d; font-size: 16px;">Your simulated role (<strong>{user_role}</strong>) does not possess permission to modify the database.</p>
-            <p style="font-size: 14px; color: #95a5a6;">Only <strong>HR</strong> and <strong>Manager</strong> credentials can execute insertions.</p>
-            <br>
-            <a href="javascript:history.back()" style="color: #3498db; text-decoration: none; font-weight: bold;">← Go Back & Change Role</a>
-        </div>
-        """, 403  # HTTP 403 Forbidden
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        login_type = request.form.get('login_type')  # 'staff' or 'hr'
+        
+        if login_type == 'hr':
+            master_code = request.form.get('hr_code', '')
+            if check_password_hash(HR_MASTER_KEY_HASH, master_code):
+                session['user_id'] = 'hr_admin'
+                session['user_name'] = 'HR Master Admin'
+                session['user_role'] = 'Admin'
+                flash("Authenticated as HR Master Administrator.", "success")
+                return redirect(url_for('dashboard'))
+            else:
+                flash("Handshake rejected. Master code invalid.", "danger")
+                
+        elif login_type == 'staff':
+            username = request.form.get('name')
+            role = request.form.get('role', 'Read')  # Assign default low-privilege role
+            
+            # In a full setup, look up user from DB and check password hash here
+            session['user_id'] = username
+            session['user_name'] = username
+            session['user_role'] = role
+            return redirect(url_for('dashboard'))
 
-    # 3. If check passes, interact with database
-    conn = sqlite3.connect('company_erp.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO Clients (client_name, contact_email) VALUES (?, ?)", (name, email))
-    conn.commit()
-    conn.close()
-    
-    # 4. Success Response
-    return f"""
-    <div style="font-family: Arial, sans-serif; margin: 80px auto; max-width: 500px; text-align: center; padding: 30px; border: 2px solid #2ecc71; border-radius: 8px; background-color: #f4fbf7;">
-        <h1 style="color: #27ae60; margin-top: 0;">Success! 🎉</h1>
-        <p style="font-size: 16px; color: #2c3e50;">Database Authorization Verified via <strong>{user_role}</strong> profile.</p>
-        <p style="color: #7f8c8d;"><strong>{name}</strong> has been written to the client directory.</p>
-        <br>
-        <a href="javascript:history.back()" style="color: #3498db; text-decoration: none; font-weight: bold;">← Return to Dashboard</a>
-    </div>
-    """
+    return render_template('index.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("Successfully logged out.", "info")
+    return redirect(url_for('login'))
+
+# --- Main Application Routes ---
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template(
+        'index.html', 
+        user_name=session.get('user_name'),
+        user_role=session.get('user_role')
+    )
+
+@app.route('/add_client', methods=['POST'])
+@login_required
+@roles_required('Admin', 'Write')
+def add_client():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    sector = request.form.get('sector', 'Private')
+
+    if not name or not email:
+        flash("Name and email are required fields.", "warning")
+        return redirect(url_for('dashboard'))
+
+    try:
+        with get_db_connection() as conn:
+            conn.execute(
+                "INSERT INTO clients (name, email, sector) VALUES (?, ?, ?)",
+                (name, email, sector)
+            )
+            conn.commit()
+        flash("Client registered successfully.", "success")
+    except sqlite3.IntegrityError:
+        flash("An account with this email already exists.", "danger")
+
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    init_db()
+    app.run(debug=True)
