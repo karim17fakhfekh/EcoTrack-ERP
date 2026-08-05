@@ -1,4 +1,7 @@
+# Read the template files and stitch together the complete app.py and index.html scripts cleanly.
 import os
+
+app_py_content = '''import os
 import sqlite3
 from functools import wraps
 from flask import (
@@ -22,7 +25,7 @@ def get_db_connection():
 
 def init_db():
     with get_db_connection() as conn:
-        conn.execute('''
+        conn.execute(\'\'\'
             CREATE TABLE IF NOT EXISTS clients (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -30,7 +33,7 @@ def init_db():
                 sector TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        ''')
+        \'\'\')
         conn.commit()
 
 # --- Decorators for Role-Based Access Control (RBAC) ---
@@ -133,3 +136,9 @@ def add_client():
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
+'''
+
+with open("app.py", "w") as f:
+    f.write(app_py_content)
+
+print("app.py saved successfully.")
