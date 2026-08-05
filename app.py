@@ -137,8 +137,3 @@ if __name__ == '__main__':
     init_db()
     app.run(debug=True)
 '''
-
-with open("app.py", "w") as f:
-    f.write(app_py_content)
-
-print("app.py saved successfully.")
